@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #14110e;
+  --shell: #1c1814;
+  --raised: #241f1a;
+  --line: #3a3228;
+  --spark: #d4a054;
+  --spark-hover: #e0b36a;
+  --mist: #b7afa4;
+  --paper: #f3ede3;
+  --ink-text: #1a1612;
+  --danger: #c45c4a;
+  --ok: #6b9e6e;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-shell: var(--shell);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-spark: var(--spark);
+  --color-spark-hover: var(--spark-hover);
+  --color-mist: var(--mist);
+  --color-paper: var(--paper);
+  --color-ink-text: var(--ink-text);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+  --font-serif: var(--font-source-serif);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html,
+body {
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+.font-serif {
+  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
+}
+
+.tiptap {
+  outline: none;
+  min-height: 60vh;
+  color: var(--ink-text);
+  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9c9488;
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  letter-spacing: -0.03em;
+}
+
+.tiptap h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.4rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--spark);
+  padding-left: 1rem;
+  color: #5c554c;
+  margin: 1rem 0;
+}
+
+.tiptap code {
+  background: #e8e0d4;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.9em;
+}
+
+.tiptap pre {
+  background: #1c1814;
+  color: var(--paper);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.collaboration-carets__caret {
+  border-left: 1px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+.collaboration-carets__label {
+  border-radius: 3px 3px 3px 0;
+  color: #14110e;
+  font-family: var(--font-outfit), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  left: -1px;
+  line-height: 1;
+  padding: 2px 6px;
+  position: absolute;
+  top: -16px;
+  user-select: none;
+  white-space: nowrap;
+}
