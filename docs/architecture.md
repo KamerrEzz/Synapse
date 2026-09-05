@@ -1,0 +1,84 @@
+# Arquitectura
+
+Synapse es una app Next.js 16 (App Router) con backend en Supabase: Auth, Postgres + RLS, Realtime, Storage, Edge Functions y pgvector. Cada workspace es un tenant. La IA solo responde con chunks de ese workspace.
+
+## Capas
+
+| Capa | Dónde | Rol |
+|------|--------|-----|
+| UI | `app/`, `components/` | Rutas App Router, UI en español |
+| Proxy | `proxy.ts` → `lib/supabase/proxy.ts` | Refresco de sesión y redirects |
+| Clientes Supabase | `lib/supabase/client.ts`, `server.ts` | Anon key + cookies (`@supabase/ssr`) |
+| APIs Next | `app/api/*` | JWT + membresía; OpenAI en el servidor |
+| Postgres | `supabase/migrations/` | Tablas, RLS, RPCs |
+| Edge Functions | `supabase/functions/` | Mismo contrato que `/api/*` para deploy remoto |
+| Collab | `lib/collab/y-supabase-provider.ts` | Yjs por Broadcast privado |
+| RAG | `lib/ai/*`, `hybrid_search` | Chunks, embeddings, RRF |
+
+El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (`unpdf` no corre igual en Deno).
+
+## Rutas
+
+```
+/                          landing (pública)
+/login                     auth
+/auth/callback             OAuth / magic link
+/invite/[token]            preview + accept (pública hasta login)
+/workspaces                lista y alta de workspace
+/[workspace]/documents     wiki
+/[workspace]/documents/[id] editor Yjs
+/[workspace]/chat/[channelId]
+/[workspace]/files
+/[workspace]/ai
+/[workspace]/search
+/[workspace]/settings
+```
+
+Públicas para el proxy: `/`, `/login`, `/auth/*`, `/invite/*`. El resto exige sesión. Usuario autenticado en `/` o `/login` → `/workspaces`.
+
+`app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`.
+
+## Datos
+
+Tenant = `workspaces` + `workspace_members` (roles `owner` | `admin` | `member`).
+
+| Tabla | Uso |
+|-------|-----|
+| `profiles` | Alta vía trigger `handle_new_user` sobre `auth.users` |
+| `workspace_invitations` | Token; `accepted_at` al aceptar |
+| `documents` | `plain_text` + `yjs_state` (bytea); `is_public` sin efecto |
+| `files` | Metadatos; blob en Storage `workspace-files/{workspace_id}/...` |
+| `knowledge_chunks` | `source_type` `file` \| `document`, embedding 1536 |
+| `channels` / `messages` | Chat; canal `general` al crear workspace |
+| `ai_conversations` / `ai_messages` | RAG + `sources` jsonb |
+| `usage_events` | Tokens IA (`kind = ai_tokens`) |
+
+RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`.
+
+Límites Free: `lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
+
+## RLS
+
+Todas las tablas Synapse tienen RLS. Las policies de tenant llaman a `is_workspace_member` / `has_workspace_role` (`SECURITY DEFINER`) para no recurar.
+
+El cliente usa la anon key; el aislamiento es la policy, no un rol distinto por usuario. `service_role` solo en servidor/admin, nunca en el browser.
+
+Protocolo manual de aislamiento: `supabase/tests/rls.sql`.
+
+## Collab (documentos)
+
+Tiptap + Yjs. Sync: canal privado `doc:{documentId}` (Broadcast: `yjs-update`, `awareness`, `sync-request`). Persistencia: `persist_document_state` (estado Yjs en base64 → bytea) con debounce ~1.8s. Carga: `get_document_state`.
+
+Autorización Realtime: policies en `realtime.messages` + `realtime_topic_allowed()` (topics `doc:`, `chat:`, `workspace:`).
+
+## Chat
+
+Insert en `public.messages`. El remitente pinta el row del `insert … select`. Los demás: `postgres_changes` en un canal privado `chat:{channelId}`.
+
+## RAG
+
+1. Archivo → Storage + fila `files` → `POST /api/process-file` (extract, chunk, embed, `knowledge_chunks`).
+2. Documento: `POST /api/index-document` sobre `plain_text`.
+3. Pregunta → embedding → `hybrid_search` (RRF: coseno + `plainto_tsquery('spanish', …)`) → chat OpenAI con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
+
+Modelos: `OPENAI_CHAT_MODEL` (default `gpt-4.1-mini`), `OPENAI_EMBEDDING_MODEL` (`text-embedding-3-small`).

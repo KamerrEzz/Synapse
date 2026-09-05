@@ -2,6 +2,8 @@
 
 Knowledge base colaborativa, chat en tiempo real y RAG privado por workspace.
 
+Documentación de implementación: [`docs/`](./docs/README.md). Spec de producto: [`project.md`](./project.md).
+
 ## Stack
 
 Next.js 16 (App Router) + TypeScript + Tailwind + Supabase (Auth, Postgres, RLS, Realtime, Storage, Edge Functions, pgvector) + Tiptap/Yjs + OpenAI.
