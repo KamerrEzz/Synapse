@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { chunkText } from "@/lib/ai/chunk";
-import { embedTexts } from "@/lib/ai/embed";
+import { embedForWorkspace } from "@/lib/ai/embed";
+import {
+  getUserAiCred,
+  jsonMissingKey,
+  MissingAiKeyError,
+} from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
 
 export async function POST(request: Request) {
@@ -36,7 +41,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, chunks: 0 });
   }
 
-  const embeddings = await embedTexts(chunks);
+  let cred;
+  try {
+    cred = await getUserAiCred(ctx.supabase);
+  } catch (err) {
+    if (err instanceof MissingAiKeyError) return jsonMissingKey();
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "No se pudo usar la clave" },
+      { status: 400 },
+    );
+  }
+
+  const embeddings = await embedForWorkspace(ctx.supabase, body.workspaceId, chunks, cred);
   const rows = chunks.map((content, index) => ({
     workspace_id: body.workspaceId,
     source_type: "document" as const,

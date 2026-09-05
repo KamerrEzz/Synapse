@@ -49,12 +49,13 @@ test.describe("authenticated workspace flow", () => {
     await expect(page.getByRole("heading", { name: "Archivos" })).toBeVisible({
       timeout: 60_000,
     });
-    await expect(page.getByText("Todavía no hay archivos en este workspace.")).toBeVisible();
+    await expect(page.getByText("Nada indexado todavía")).toBeVisible();
 
     await page.getByRole("link", { name: "IA" }).click();
-    await expect(page.getByRole("button", { name: "Preguntar" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "IA del workspace" })).toBeVisible({
       timeout: 60_000,
     });
+    await expect(page.getByRole("link", { name: "Ir a Ajustes" })).toBeVisible();
 
     await page.getByRole("link", { name: "Buscar" }).click();
     await expect(page.getByRole("heading", { name: "Buscar" })).toBeVisible({
@@ -66,5 +67,6 @@ test.describe("authenticated workspace flow", () => {
       timeout: 60_000,
     });
     await expect(page.getByText(/plan free/i)).toBeVisible();
+    await expect(page.getByText("Clave de IA")).toBeVisible();
   });
 });

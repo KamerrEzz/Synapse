@@ -1,8 +1,11 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { InviteForm, ProfileForm } from "@/components/settings/settings-forms";
+import { OpenAIKeyForm } from "@/components/settings/openai-key-form";
+import { PageHeader, Panel } from "@/components/layout/page-chrome";
 import { Badge } from "@/components/ui/badge";
 import { FREE_PLAN } from "@/lib/plans";
-import type { WorkspaceInvitation, WorkspaceMember } from "@/types/database";
+import { ROLE_LABEL } from "@/lib/labels";
+import type { WorkspaceInvitation, WorkspaceMember, WorkspaceRole } from "@/types/database";
 
 export default async function SettingsPage({
   params,
@@ -31,47 +34,50 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className="space-y-12 px-8 py-8">
-      <section>
-        <h1 className="font-display text-3xl">Ajustes</h1>
-        <p className="mt-1 text-sm text-mist">
-          {ctx.workspace.name} · plan {ctx.workspace.plan}
-        </p>
-        <p className="mt-3 text-sm text-mist">
-          Tokens IA este mes: {Number(tokenUsage ?? 0).toLocaleString("es")} /{" "}
-          {FREE_PLAN.aiTokensPerMonth.toLocaleString("es")}
-        </p>
-      </section>
-      <section>
-        <h2 className="font-display text-2xl">Tu perfil</h2>
+    <main className="mx-auto max-w-3xl space-y-6 px-8 py-8">
+      <PageHeader
+        title="Ajustes"
+        description={`${ctx.workspace.name} · plan ${ctx.workspace.plan}. Tokens IA este mes: ${Number(tokenUsage ?? 0).toLocaleString("es")} / ${FREE_PLAN.aiTokensPerMonth.toLocaleString("es")}.`}
+      />
+
+      <Panel>
+        <h2 className="font-display text-xl">Clave de IA</h2>
+        <div className="mt-4">
+          <OpenAIKeyForm />
+        </div>
+      </Panel>
+
+      <Panel>
+        <h2 className="font-display text-xl">Tu perfil</h2>
         <div className="mt-4">
           <ProfileForm
             fullName={ctx.profile?.full_name ?? ""}
             userId={ctx.user.id}
           />
         </div>
-      </section>
-      <section>
-        <h2 className="font-display text-2xl">Miembros</h2>
-        <ul className="mt-4 divide-y divide-line border-y border-line">
+      </Panel>
+
+      <Panel>
+        <h2 className="font-display text-xl">Miembros</h2>
+        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-xl border border-line">
           {(members as WorkspaceMember[] | null)?.map((m) => (
-            <li key={m.user_id} className="flex items-center justify-between py-3">
-              <span>{m.profiles?.full_name || m.user_id}</span>
-              <Badge>{m.role}</Badge>
+            <li key={m.user_id} className="flex items-center justify-between bg-raised/40 px-4 py-3">
+              <span className="text-sm">{m.profiles?.full_name || m.user_id}</span>
+              <Badge>{ROLE_LABEL[m.role as WorkspaceRole] ?? m.role}</Badge>
             </li>
           ))}
         </ul>
         <InviteForm workspaceId={ctx.workspace.id} canInvite={canInvite} />
         {canInvite && (invitations as WorkspaceInvitation[] | null)?.length ? (
-          <ul className="mt-4 text-sm text-mist">
+          <ul className="mt-4 space-y-1 text-sm text-mist">
             {(invitations as WorkspaceInvitation[]).map((inv) => (
               <li key={inv.id}>
-                Pendiente: {inv.email} ({inv.role})
+                Pendiente: {inv.email} ({ROLE_LABEL[inv.role] ?? inv.role})
               </li>
             ))}
           </ul>
         ) : null}
-      </section>
+      </Panel>
     </main>
   );
 }

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { chunkText } from "@/lib/ai/chunk";
-import { embedTexts } from "@/lib/ai/embed";
+import { embedForWorkspace } from "@/lib/ai/embed";
 import { extractFileText } from "@/lib/ai/extract";
+import {
+  getUserAiCred,
+  jsonMissingKey,
+  MissingAiKeyError,
+} from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
 import { FREE_PLAN } from "@/lib/plans";
 
@@ -63,7 +68,20 @@ export async function POST(request: Request) {
     }
 
     const chunks = chunkText(text);
-    const embeddings = await embedTexts(chunks);
+    let cred;
+    try {
+      cred = await getUserAiCred(ctx.supabase);
+    } catch (err) {
+      if (err instanceof MissingAiKeyError) {
+        await ctx.supabase
+          .from("files")
+          .update({ status: "error", error_message: err.message })
+          .eq("id", file.id);
+        return jsonMissingKey();
+      }
+      throw err;
+    }
+    const embeddings = await embedForWorkspace(ctx.supabase, body.workspaceId, chunks, cred);
     const rows = chunks.map((content, index) => ({
       workspace_id: body.workspaceId,
       source_type: "file" as const,

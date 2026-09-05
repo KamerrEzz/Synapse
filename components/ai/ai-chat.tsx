@@ -54,13 +54,18 @@ export function AiChat({
     });
 
     if (!res.ok || !res.body) {
+      const body = await res.json().catch(() => ({}));
+      const fallback =
+        body.code === "missing_openai_key"
+          ? body.error
+          : body.error || "No se pudo responder. Revisa tu clave de IA y los archivos indexados.";
       setMessages((prev) => [
         ...prev,
         {
           id: crypto.randomUUID(),
           conversation_id: activeId ?? "temp",
           role: "assistant",
-          content: "No se pudo responder. Revisa OPENAI_API_KEY y los archivos indexados.",
+          content: fallback,
           sources: null,
           created_at: new Date().toISOString(),
         },
@@ -127,17 +132,26 @@ export function AiChat({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-8">
+      <div className="flex-1 space-y-5 overflow-y-auto px-6 py-8">
         {messages.length === 0 ? (
-          <p className="max-w-lg text-mist">
-            Pregunta sobre los documentos y archivos de este workspace. Si no está
-            en vuestra base, la IA lo dirá.
-          </p>
+          <div className="mx-auto max-w-lg rounded-2xl border border-line bg-shell px-6 py-8">
+            <p className="font-display text-xl">Pregunta al workspace</p>
+            <p className="mt-2 text-sm leading-relaxed text-mist">
+              Responde con documentos y archivos indexados. Si no está en vuestra base, lo dirá.
+            </p>
+          </div>
         ) : null}
         {messages.map((m) => (
-          <article key={m.id} className="max-w-2xl">
-            <p className="text-xs text-mist">{m.role === "user" ? "Tú" : "Synapse"}</p>
-            <p className="mt-1 whitespace-pre-wrap leading-relaxed">{m.content}</p>
+          <article
+            key={m.id}
+            className={`max-w-2xl rounded-2xl px-4 py-3 ${
+              m.role === "user"
+                ? "ml-auto bg-raised text-paper"
+                : "border border-line bg-shell"
+            }`}
+          >
+            <p className="text-[11px] text-mist">{m.role === "user" ? "Tú" : "Synapse"}</p>
+            <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">{m.content}</p>
             {m.role === "assistant" && m.sources && m.sources.length > 0 ? (
               <ul className="mt-3 flex flex-wrap gap-2">
                 {m.sources.map((s, i) => (
@@ -160,16 +174,21 @@ export function AiChat({
         ))}
         <div ref={bottom} />
       </div>
-      <form onSubmit={send} className="border-t border-line p-4">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Pregunta sobre el conocimiento del equipo"
-          rows={3}
-        />
-        <Button type="submit" className="mt-3" disabled={busy}>
-          {busy ? "Pensando…" : "Preguntar"}
-        </Button>
+      <form onSubmit={send} className="border-t border-line bg-shell p-4">
+        <div className="rounded-xl border border-line bg-raised p-2">
+          <Textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Pregunta sobre el conocimiento del equipo"
+            rows={3}
+            className="min-h-20 border-0 bg-transparent focus-visible:ring-0"
+          />
+          <div className="flex justify-end">
+            <Button type="submit" disabled={busy}>
+              {busy ? "Pensando…" : "Preguntar"}
+            </Button>
+          </div>
+        </div>
       </form>
     </div>
   );

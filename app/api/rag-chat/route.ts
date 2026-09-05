@@ -1,5 +1,10 @@
-import { CHAT_MODEL, requireOpenAI } from "@/lib/ai/provider";
-import { embedTexts } from "@/lib/ai/embed";
+import { compatibleClient } from "@/lib/ai/provider";
+import { embedForWorkspace } from "@/lib/ai/embed";
+import {
+  getUserAiCred,
+  jsonMissingKey,
+  MissingAiKeyError,
+} from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
 import { FREE_PLAN } from "@/lib/plans";
 import type { AiSource, SearchHit } from "@/types/database";
@@ -31,7 +36,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const [embedding] = await embedTexts([body.question]);
+  let cred;
+  try {
+    cred = await getUserAiCred(ctx.supabase);
+  } catch (err) {
+    if (err instanceof MissingAiKeyError) return jsonMissingKey();
+    return Response.json(
+      { error: err instanceof Error ? err.message : "No se pudo usar la clave" },
+      { status: 400 },
+    );
+  }
+
+  const [embedding] = await embedForWorkspace(ctx.supabase, body.workspaceId, [body.question], cred);
   const { data: hits } = await ctx.supabase.rpc("hybrid_search", {
     p_workspace_id: body.workspaceId,
     p_query: body.question,
@@ -76,9 +92,9 @@ export async function POST(request: Request) {
     content: body.question,
   });
 
-  const openai = requireOpenAI();
-  const stream = await openai.chat.completions.create({
-    model: CHAT_MODEL,
+  const client = compatibleClient(cred.apiKey, cred.baseUrl);
+  const stream = await client.chat.completions.create({
+    model: cred.chatModel,
     stream: true,
     temperature: 0.2,
     messages: [

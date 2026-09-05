@@ -7,7 +7,7 @@ El spec original está en [`project.md`](../project.md). Varias filas de abajo c
 | ID | Decisión | Por qué | Dónde |
 |----|----------|---------|--------|
 | D1 | Collab = Tiptap + Yjs CRDT. Sync = Realtime **Broadcast** en canales privados `doc:{id}`. Persistencia = `yjs_state` bytea vía RPCs base64. Sin Hocuspocus | Menos infra; PostgREST no trata bien bytea crudo | `lib/collab/y-supabase-provider.ts`, `get_document_state` / `persist_document_state` |
-| D2 | IA = solo OpenAI. Embeddings `text-embedding-3-small` (1536). Chat `OPENAI_CHAT_MODEL` default `gpt-4.1-mini` | Un proveedor, dimensión fija del índice | `lib/ai/provider.ts`, `knowledge_chunks.embedding` |
+| D2 | IA = APIs **compatibles con OpenAI** (OpenAI, NaN, URL propia). Chat y embeddings los elige cada usuario. Dimensión del índice **por workspace** (1536 u 4096, etc.) | Un SDK, varios proveedores | `lib/ai/catalog.ts`, `lib/ai/provider.ts`, `knowledge_chunks.embedding` |
 | D3 | UI en español | Producto | `app/`, `components/` |
 | D4 | `documents.is_public` existe y **no** se usa en RLS ni UI | Spec lo planteaba; el MVP no comparte links públicos | policies en `0001`, páginas de documentos |
 | D5 | Next.js 16: `proxy.ts`, no `middleware.ts`. `params` como `Promise<{…}>` | Convención actual de Next 16 | `proxy.ts`, páginas del dashboard |
@@ -20,6 +20,7 @@ El spec original está en [`project.md`](../project.md). Varias filas de abajo c
 | D12 | Realtime Authorization: policies en `realtime.messages`, sin `ALTER TABLE` | Dueño `supabase_realtime_admin`; RLS ya on | `0004_realtime_auth_policies.sql` |
 | D13 | Chat: pintar el mensaje del `insert` al instante; `postgres_changes` para el resto | Sin Authorization Realtime el remitente no veía su mensaje | `components/chat/chat-room.tsx` |
 | D14 | Plan Free con techos en código (`lib/plans.ts`) | Tokens, files, miembros, documentos | `lib/plans.ts`, APIs |
+| D15 | BYOK: cada usuario guarda proveedor + URL + modelos + API key. AES-256-GCM en Next (`SYNAPSE_APP_SECRET`). Tabla `user_openai_keys` sin SELECT para `authenticated`. UI solo ve last4. Sin fallback a env | El usuario paga su uso; no hay clave compartida del producto | `0005`/`0006`, `lib/crypto/secret.ts`, `/api/openai-key` |
 
 ## Fuera de alcance (MVP)
 

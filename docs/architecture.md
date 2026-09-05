@@ -48,12 +48,13 @@ Tenant = `workspaces` + `workspace_members` (roles `owner` | `admin` | `member`)
 | `workspace_invitations` | Token; `accepted_at` al aceptar |
 | `documents` | `plain_text` + `yjs_state` (bytea); `is_public` sin efecto |
 | `files` | Metadatos; blob en Storage `workspace-files/{workspace_id}/...` |
-| `knowledge_chunks` | `source_type` `file` \| `document`, embedding 1536 |
+| `knowledge_chunks` | `source_type` `file` \| `document`, embedding (dimensión del workspace) |
 | `channels` / `messages` | Chat; canal `general` al crear workspace |
 | `ai_conversations` / `ai_messages` | RAG + `sources` jsonb |
+| `user_openai_keys` | Ciphertext AES-GCM + last4; sin SELECT directo |
 | `usage_events` | Tokens IA (`kind = ai_tokens`) |
 
-RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`.
+RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
 
 Límites Free: `lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
 
@@ -81,4 +82,6 @@ Insert en `public.messages`. El remitente pinta el row del `insert … select`. 
 2. Documento: `POST /api/index-document` sobre `plain_text`.
 3. Pregunta → embedding → `hybrid_search` (RRF: coseno + `plainto_tsquery('spanish', …)`) → chat OpenAI con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
 
-Modelos: `OPENAI_CHAT_MODEL` (default `gpt-4.1-mini`), `OPENAI_EMBEDDING_MODEL` (`text-embedding-3-small`).
+La clave es por usuario (BYOK) y vale cualquier API compatible con OpenAI (`baseURL` + key). Next cifra con AES-256-GCM (`SYNAPSE_APP_SECRET`) y no hay fallback a `OPENAI_API_KEY`. Sin clave: IA bloqueada, embeddings y búsqueda semántica 409 `missing_ai_key`. El workspace fija la dimensión con lo que **devuelve el modelo** al indexar (`claim_workspace_embedding_dim`). Si aún no hay vectores, se puede cambiar de dimensión. Los presets (4096 en la ficha de NaN) no se imponen: `qwen3-embedding` en la práctica suele devolver 1024.
+
+Modelos: los guarda cada usuario (p.ej. OpenAI `gpt-4.1-mini` + `text-embedding-3-small`, o NaN `qwen3.6` + `qwen3-embedding`). La dim real la marca la respuesta del API.

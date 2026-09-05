@@ -20,6 +20,9 @@ Aplicar en orden. No reescribir `0001` en producción; añadir archivos nuevos.
 | `0002_invitation_preview.sql` | `get_invitation_preview` (invitee sin SELECT de invitaciones), `workspace_monthly_ai_tokens` |
 | `0003_hybrid_search_plainto.sql` | `hybrid_search` con `plainto_tsquery('spanish', …)` |
 | `0004_realtime_auth_policies.sql` | Policies `synapse_realtime_select` / `_insert` en `realtime.messages` |
+| `0005_user_openai_keys.sql` | `user_openai_keys` + RPCs de cifrado por usuario |
+| `0006_ai_providers.sql` | Proveedor/URL/modelos, `workspaces.embedding_dim`, `hybrid_search` con `vector` sin tamaño fijo, `claim_workspace_embedding_dim` |
+| `0007_claim_embedding_dim_if_empty.sql` | Si no hay vectores, se puede cambiar la dimensión (p.ej. tras un indexado fallido) |
 
 ### `0004` y `realtime.messages`
 

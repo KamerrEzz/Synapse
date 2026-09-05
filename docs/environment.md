@@ -9,9 +9,9 @@ Definición: [`.env.example`](../.env.example). Valores reales: `.env.local` (gi
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser + server | URL del proyecto (`https://<ref>.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server | JWT anon legacy (`eyJ…`). Evitar `sb_publishable_…` con `@supabase/supabase-js` 2.57 |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor | Admin Auth / bypass RLS. No exponer al cliente |
-| `OPENAI_API_KEY` | Server + secrets de Edge Functions | Embeddings y chat |
-| `OPENAI_CHAT_MODEL` | Server | Default `gpt-4.1-mini` |
-| `OPENAI_EMBEDDING_MODEL` | Server | Default `text-embedding-3-small` (dim 1536) |
+| `SYNAPSE_APP_SECRET` | Solo servidor | ≥32 caracteres. Secreto de aplicación (cifra credenciales de IA). Acepta el alias antiguo `OPENAI_KEY_ENCRYPTION_SECRET` si aún está en el entorno |
+| `OPENAI_API_KEY` | Secrets de Edge Functions (opcional) | Next **no** la usa |
+| `OPENAI_CHAT_MODEL` / `OPENAI_EMBEDDING_MODEL` | Edge Functions (opcional) | Next usa los modelos de la credencial del usuario |
 | `NEXT_PUBLIC_SITE_URL` | Browser + invite URLs | En local `http://localhost:3000`. Playwright usa `http://127.0.0.1:3000` |
 
 Playwright (`playwright.config.ts`) reescribe `process.env` desde `.env.local` y arranca Next en `127.0.0.1:3000`. `E2E_EMAIL` / `E2E_PASSWORD` tienen default para el usuario de prueba sembrado.
@@ -27,7 +27,7 @@ Proyecto usado en desarrollo: ref `rantlkxgkbjaccehkfie` (nombre de dashboard `a
 | Auth → Google / GitHub | Redirect `https://<ref>.supabase.co/auth/v1/callback` |
 | Auth → Rate Limits | El mailer integrado permite **2 correos/hora** en el proyecto. No sube sin SMTP propio |
 | Realtime → Settings | Desactivar **Allow public access** para canales `private: true` |
-| Edge Functions → Secrets | `OPENAI_API_KEY`, modelos, `SITE_URL` |
+| Edge Functions → Secrets | `OPENAI_API_KEY` solo si se invocan funciones; la app Next usa BYOK |
 | Storage | Buckets `workspace-files` (privado) y `avatars` (público); los crea `0001` |
 
 Migraciones: CLI (`npx supabase db push`) o SQL Editor. `0004` no incluye `ALTER TABLE` sobre `realtime.messages` (el dueño es `supabase_realtime_admin`; RLS ya está on). Solo `CREATE`/`DROP POLICY`.

@@ -66,7 +66,12 @@ export function FileUploader({
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "El archivo se subió pero no se pudo procesar");
+        throw new Error(
+          body.error ||
+            (res.status === 409
+              ? "Añade tu clave de IA en Ajustes"
+              : "El archivo se subió pero no se pudo procesar"),
+        );
       }
       toast.success("Archivo listo para la IA");
       router.refresh();

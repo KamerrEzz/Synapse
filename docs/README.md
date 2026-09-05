@@ -14,7 +14,7 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 ## Arranque
 
 1. Copiar [`.env.example`](../.env.example) a `.env.local`.
-2. Aplicar migraciones en el proyecto Supabase (`0001`–`0004`).
+2. Aplicar migraciones en el proyecto Supabase (`0001`–`0006`).
 3. `npm install` y `npm run dev` (Next 16 usa `proxy.ts`, no `middleware.ts`).
 4. `npm run test:e2e` para Playwright.
 
@@ -24,6 +24,6 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 - Auth de sesión: `lib/supabase/{client,server,proxy}.ts`. Gate de workspace: `lib/auth.ts`.
 - La UI llama a `/api/*`. `supabase/functions/` es la copia desplegable, no el path que usa el browser en local.
 - `is_public` en `documents` no entra en RLS ni en la UI.
-- IA: solo OpenAI. Embeddings `text-embedding-3-small` (vector 1536).
+- IA: APIs compatibles con OpenAI (OpenAI, NaN, URL propia). Dimensión de embeddings por workspace.
 - UI en español. Commits: conventional commits atómicos.
 - `AGENTS.md` / `CLAUDE.md` los regenera `next dev`; no son spec del producto.

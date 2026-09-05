@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { AiChat } from "@/components/ai/ai-chat";
+import { AiKeyGate } from "@/components/ai/ai-key-gate";
+import { AiSidebar } from "@/components/ai/ai-sidebar";
+import { getUserOpenAIMeta } from "@/lib/ai/user-key";
 import type { AiConversation, AiMessage } from "@/types/database";
 
 export default async function AiConversationPage({
@@ -19,6 +21,8 @@ export default async function AiConversationPage({
     .maybeSingle();
   if (!conversation) notFound();
 
+  const keyMeta = await getUserOpenAIMeta(ctx.supabase);
+
   const { data: messages } = await ctx.supabase
     .from("ai_messages")
     .select("*")
@@ -34,32 +38,22 @@ export default async function AiConversationPage({
 
   return (
     <div className="flex h-screen">
-      <aside className="w-56 shrink-0 border-r border-line bg-shell p-4">
-        <Link href={`/${slug}/ai`} className="font-display text-lg">
-          Nueva pregunta
-        </Link>
-        <ul className="mt-4 space-y-1">
-          {(convos as AiConversation[] | null)?.map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`/${slug}/ai/${c.id}`}
-                className={`block truncate rounded-md px-2 py-1.5 text-sm ${
-                  c.id === conversationId ? "bg-raised text-spark" : "text-mist hover:text-paper"
-                }`}
-              >
-                {c.title || "Conversación"}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </aside>
+      <AiSidebar
+        slug={slug}
+        conversations={(convos ?? []) as AiConversation[]}
+        activeId={conversationId}
+      />
       <div className="min-w-0 flex-1">
-        <AiChat
-          workspaceId={ctx.workspace.id}
-          slug={slug}
-          conversationId={conversationId}
-          initialMessages={(messages ?? []) as AiMessage[]}
-        />
+        {keyMeta.configured ? (
+          <AiChat
+            workspaceId={ctx.workspace.id}
+            slug={slug}
+            conversationId={conversationId}
+            initialMessages={(messages ?? []) as AiMessage[]}
+          />
+        ) : (
+          <AiKeyGate slug={slug} />
+        )}
       </div>
     </div>
   );
