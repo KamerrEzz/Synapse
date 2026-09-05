@@ -33,29 +33,39 @@ export default async function ChannelPage({
 
   return (
     <div className="flex h-screen">
-      <aside className="w-56 shrink-0 border-r border-line bg-shell p-4">
-        <p className="text-xs text-mist">Canales</p>
-        <ul className="mt-3 space-y-1">
+      <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-shell">
+        <div className="border-b border-line px-4 py-4">
+          <p className="text-[11px] text-mist">Canales</p>
+        </div>
+        <ul className="flex-1 space-y-0.5 overflow-y-auto p-2">
           {channelList.map((c) => (
             <li key={c.id}>
               <Link
                 href={`/${slug}/chat/${c.id}`}
                 className={cn(
-                  "block rounded-md px-2 py-1.5 text-sm",
-                  c.id === channelId ? "bg-raised text-spark" : "text-mist hover:text-paper",
+                  "block rounded-lg px-3 py-2 text-sm",
+                  c.id === channelId
+                    ? "bg-raised text-paper shadow-[inset_2px_0_0_0_var(--spark)]"
+                    : "text-mist hover:bg-raised/70 hover:text-paper",
                 )}
               >
-                #{c.name}
+                <span className="text-spark">#</span>
+                {c.name}
               </Link>
             </li>
           ))}
         </ul>
-        <div className="mt-6">
+        <div className="border-t border-line p-3">
           <NewChannelForm workspaceId={ctx.workspace.id} slug={slug} />
         </div>
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-line px-6 py-3 font-medium">#{channel.name}</header>
+      <div className="flex min-w-0 flex-1 flex-col bg-ink">
+        <header className="border-b border-line bg-shell px-6 py-3">
+          <p className="text-sm font-medium">
+            <span className="text-spark">#</span>
+            {channel.name}
+          </p>
+        </header>
         <ChatRoom
           channelId={channel.id}
           workspaceId={ctx.workspace.id}

@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ROLE_LABEL } from "@/lib/labels";
 import type { Profile, Workspace, WorkspaceRole } from "@/types/database";
 
 const NAV = [
@@ -39,15 +40,16 @@ export function Sidebar({
   const initials = (profile?.full_name || profile?.id || "?").slice(0, 2);
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-line bg-shell">
-      <div className="px-4 py-5">
-        <Link href="/workspaces" className="font-display text-xl tracking-tight">
-          Synapse
+    <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col border-r border-line bg-shell">
+      <div className="px-3 py-5">
+        <Link href="/workspaces" className="flex items-center gap-2 px-1">
+          <span className="h-2 w-2 rounded-full bg-spark" aria-hidden />
+          <span className="font-display text-xl tracking-tight">Synapse</span>
         </Link>
-        <label className="mt-4 block">
-          <span className="sr-only">Workspace</span>
+        <label className="mt-5 block px-1">
+          <span className="text-[11px] text-mist">Workspace</span>
           <select
-            className="mt-1 h-10 w-full cursor-pointer rounded-md border border-line bg-raised px-2 text-sm text-paper"
+            className="mt-1.5 h-10 w-full cursor-pointer rounded-lg border border-line bg-raised px-2.5 text-sm text-paper"
             value={workspace.slug}
             onChange={(e) => {
               window.location.href = `/${e.target.value}/documents`;
@@ -61,7 +63,7 @@ export function Sidebar({
           </select>
         </label>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 px-2">
+      <nav className="flex flex-1 flex-col gap-0.5 px-2">
         {NAV.map((item) => {
           const href = `/${workspace.slug}/${item.href}`;
           const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -71,23 +73,27 @@ export function Sidebar({
               key={item.href}
               href={href}
               className={cn(
-                "flex h-10 items-center gap-2 rounded-md px-3 text-sm",
+                "flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm",
                 active
-                  ? "bg-raised text-spark"
-                  : "text-mist hover:bg-raised hover:text-paper",
+                  ? "bg-raised text-paper shadow-[inset_2px_0_0_0_var(--spark)]"
+                  : "text-mist hover:bg-raised/70 hover:text-paper",
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={cn("h-4 w-4", active ? "text-spark" : "")} />
               {item.label}
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto flex items-center gap-3 border-t border-line px-4 py-4">
-        <Avatar src={profile?.avatar_url} fallback={initials} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm">{profile?.full_name || "Tu perfil"}</p>
-          <p className="text-[11px] text-mist">{role}</p>
+      <div className="mt-auto border-t border-line px-3 py-4">
+        <div className="flex items-center gap-3 px-1">
+          <Avatar src={profile?.avatar_url} fallback={initials} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm text-paper">{profile?.full_name || "Tu perfil"}</p>
+            <p className="text-[11px] text-mist">{ROLE_LABEL[role]}</p>
+          </div>
+        </div>
+        <div className="mt-3">
           <SignOutButton />
         </div>
       </div>

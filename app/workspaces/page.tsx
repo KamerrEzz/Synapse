@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CreateWorkspaceForm } from "@/components/workspace/create-workspace-form";
-import { redirect } from "next/navigation";
+import { ROLE_LABEL } from "@/lib/labels";
+import type { WorkspaceRole } from "@/types/database";
 
 export default async function WorkspacesPage() {
   const supabase = await createClient();
@@ -49,7 +51,9 @@ export default async function WorkspacesPage() {
                 <p className="font-medium">{ws.name}</p>
                 <p className="text-sm text-mist">{ws.slug}</p>
               </div>
-              <span className="text-xs text-mist">{ws.role}</span>
+              <span className="text-xs text-mist">
+                {ROLE_LABEL[ws.role as WorkspaceRole] ?? ws.role}
+              </span>
             </Link>
           </li>
         ))}

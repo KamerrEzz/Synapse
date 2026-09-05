@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { SearchHit } from "@/types/database";
 
 export function SearchBox({
@@ -14,6 +16,7 @@ export function SearchBox({
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
@@ -25,6 +28,13 @@ export function SearchBox({
       body: JSON.stringify({ workspaceId, query: q }),
     });
     const body = await res.json();
+    if (!res.ok) {
+      setHits([]);
+      setError(body.error || "No se pudo buscar");
+      setBusy(false);
+      return;
+    }
+    setError(null);
     setHits(body.hits ?? []);
     setBusy(false);
   }
@@ -32,23 +42,21 @@ export function SearchBox({
   return (
     <div>
       <form onSubmit={search} className="flex max-w-xl gap-2">
-        <input
+        <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar en el workspace"
-          className="h-11 flex-1 rounded-md border border-line bg-raised px-3 text-sm"
+          aria-label="Buscar en el workspace"
+          className="h-11"
         />
-        <button
-          type="submit"
-          className="h-11 cursor-pointer rounded-md bg-spark px-4 text-sm font-medium text-ink"
-          disabled={busy}
-        >
+        <Button type="submit" disabled={busy} className="h-11">
           {busy ? "Buscando…" : "Buscar"}
-        </button>
+        </Button>
       </form>
-      <ul className="mt-10 space-y-6">
+      {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
+      <ul className="mt-8 space-y-4">
         {hits.map((hit) => (
-          <li key={hit.id} className="max-w-2xl">
+          <li key={hit.id} className="max-w-2xl rounded-xl border border-line bg-shell px-4 py-3">
             <Link
               href={
                 hit.source_type === "document"

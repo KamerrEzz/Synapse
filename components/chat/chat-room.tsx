@@ -90,23 +90,28 @@ export function ChatRoom({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
+      <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
         {messages.length === 0 ? (
-          <p className="text-sm text-mist">Sé la primera persona en escribir aquí.</p>
+          <div className="flex h-full min-h-64 items-center justify-center">
+            <p className="max-w-sm text-center text-sm leading-relaxed text-mist">
+              Este canal está en silencio. Escribe el primer mensaje para el equipo.
+            </p>
+          </div>
         ) : null}
         {messages.map((m) => {
           const name = m.profiles?.full_name || "Miembro";
+          const mine = m.user_id === userId;
           return (
             <div key={m.id} className="flex gap-3">
               <Avatar src={m.profiles?.avatar_url} fallback={name} />
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm">
-                  <span className="font-medium">{name}</span>{" "}
+                  <span className={mine ? "font-medium text-spark" : "font-medium"}>{name}</span>{" "}
                   <span className="text-xs text-mist">
                     {format(new Date(m.created_at), "HH:mm", { locale: es })}
                   </span>
                 </p>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
+                <p className="mt-0.5 whitespace-pre-wrap text-sm leading-relaxed text-paper/90">
                   {m.content}
                 </p>
               </div>
@@ -115,14 +120,19 @@ export function ChatRoom({
         })}
         <div ref={bottom} />
       </div>
-      <form onSubmit={send} className="flex gap-2 border-t border-line p-4">
-        <Input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Escribe un mensaje"
-          aria-label="Mensaje"
-        />
-        <Button type="submit">Enviar</Button>
+      <form onSubmit={send} className="border-t border-line bg-shell p-4">
+        <div className="flex gap-2 rounded-xl border border-line bg-raised p-1.5">
+          <Input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Escribe un mensaje"
+            aria-label="Mensaje"
+            className="border-0 bg-transparent focus-visible:ring-0"
+          />
+          <Button type="submit" className="shrink-0">
+            Enviar
+          </Button>
+        </div>
       </form>
       <span className="sr-only">{profile?.full_name}</span>
     </div>

@@ -57,10 +57,25 @@ export function ProfileForm({
 
   return (
     <form onSubmit={save} className="max-w-md space-y-4">
-      <Input value={name} onChange={(e) => setName(e.target.value)} aria-label="Nombre" />
+      <div className="space-y-2">
+        <label htmlFor="full-name" className="text-sm text-mist">
+          Nombre
+        </label>
+        <Input
+          id="full-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          aria-label="Nombre"
+        />
+      </div>
       <label className="block text-sm text-mist">
         Avatar
-        <input type="file" accept="image/*" className="mt-2 block text-paper" onChange={onAvatar} />
+        <input
+          type="file"
+          accept="image/*"
+          className="mt-2 block w-full text-sm text-paper file:mr-3 file:rounded-lg file:border-0 file:bg-raised file:px-3 file:py-1.5 file:text-paper"
+          onChange={onAvatar}
+        />
       </label>
       <Button type="submit">Guardar perfil</Button>
     </form>
@@ -96,20 +111,25 @@ export function InviteForm({
   }
 
   return (
-    <form onSubmit={invite} className="mt-4 max-w-md space-y-3">
-      <Input
-        type="email"
-        required
-        placeholder="correo@equipo.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <Button type="submit">Invitar</Button>
+    <div className="mt-5 space-y-3">
+      <form onSubmit={invite} className="flex max-w-md gap-2">
+        <Input
+          type="email"
+          required
+          placeholder="correo@equipo.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-label="Correo para invitar"
+        />
+        <Button type="submit" className="shrink-0">
+          Invitar
+        </Button>
+      </form>
       {link ? (
         <p className="break-all text-xs text-mist">
           Enlace: <span className="text-paper">{link}</span>
         </p>
       ) : null}
-    </form>
+    </div>
   );
 }

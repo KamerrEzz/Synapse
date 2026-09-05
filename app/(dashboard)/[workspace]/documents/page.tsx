@@ -3,6 +3,8 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { NewDocumentButton } from "@/components/documents/new-document-button";
+import { PageHeader } from "@/components/layout/page-chrome";
+import { EmptyState } from "@/components/layout/empty-state";
 import type { DocumentRow } from "@/types/database";
 
 export default async function DocumentsPage({
@@ -21,28 +23,28 @@ export default async function DocumentsPage({
   const documents = (data ?? []) as DocumentRow[];
 
   return (
-    <main className="px-8 py-8">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Documentos</h1>
-          <p className="mt-1 text-sm text-mist">La wiki del workspace. Edición simultánea con Yjs.</p>
-        </div>
-        <NewDocumentButton workspaceId={ctx.workspace.id} slug={slug} />
-      </div>
+    <main className="mx-auto max-w-5xl px-8 py-8">
+      <PageHeader
+        title="Documentos"
+        description="La wiki del workspace. Edición simultánea con Yjs."
+        action={<NewDocumentButton workspaceId={ctx.workspace.id} slug={slug} />}
+      />
       {documents.length === 0 ? (
-        <p className="mt-16 max-w-md text-mist">
-          Aún no hay páginas. Crea la primera para empezar a escribir en equipo.
-        </p>
+        <EmptyState
+          title="La wiki está vacía"
+          description="Crea la primera página para empezar a escribir en equipo."
+          action={<NewDocumentButton workspaceId={ctx.workspace.id} slug={slug} />}
+        />
       ) : (
-        <ul className="mt-10 divide-y divide-line border-y border-line">
+        <ul className="mt-8 overflow-hidden rounded-2xl border border-line bg-shell">
           {documents.map((doc) => (
-            <li key={doc.id}>
+            <li key={doc.id} className="border-b border-line last:border-b-0">
               <Link
                 href={`/${slug}/documents/${doc.id}`}
-                className="flex items-baseline justify-between gap-4 py-4 hover:text-spark"
+                className="flex items-baseline justify-between gap-4 px-5 py-4 hover:bg-raised/50"
               >
-                <div>
-                  <p className="text-lg">{doc.title || "Sin título"}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-base text-paper">{doc.title || "Sin título"}</p>
                   <p className="mt-1 line-clamp-1 text-sm text-mist">
                     {doc.plain_text || "Vacío"}
                   </p>
