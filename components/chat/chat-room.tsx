@@ -68,13 +68,24 @@ export function ChatRoom({
     if (!content) return;
     setText("");
     const supabase = createClient();
-    const { error } = await supabase.from("messages").insert({
-      channel_id: channelId,
-      workspace_id: workspaceId,
-      user_id: userId,
-      content,
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        channel_id: channelId,
+        workspace_id: workspaceId,
+        user_id: userId,
+        content,
+      })
+      .select("*, profiles(*)")
+      .single();
+    if (error || !data) {
+      setText(content);
+      return;
+    }
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === data.id)) return prev;
+      return [...prev, data as Message];
     });
-    if (error) setText(content);
   }
 
   return (
