@@ -1,0 +1,2 @@
+-- Optional local seed. Auth users must exist before profiles/workspaces can be seeded.
+-- Left empty on purpose: workspaces are created via public.create_workspace() after signup.

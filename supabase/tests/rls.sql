@@ -1,0 +1,25 @@
+-- Isolation contract for Synapse RLS. Not applied as a migration.
+--
+-- Create two Auth users (alice, bob). Then:
+--
+-- Alice JWT:
+--   select (public.create_workspace('Alpha', 'alpha-iso')).slug;
+--   insert into public.documents (workspace_id, title, created_by)
+--     select id, 'Secreto de Alice', auth.uid()
+--     from public.workspaces where slug = 'alpha-iso';
+--
+-- Bob JWT — all of these must return 0 / fail:
+--   select count(*) from public.workspaces where slug = 'alpha-iso';           -- 0
+--   select count(*) from public.documents;                                    -- 0
+--   select count(*) from public.messages;                                     -- 0
+--   select count(*) from public.files;                                        -- 0
+--   select count(*) from public.knowledge_chunks;                             -- 0
+--   insert into public.documents (workspace_id, title, created_by)
+--     select id, 'Intruso', auth.uid() from public.workspaces where slug = 'alpha-iso';
+--     -- must fail
+--
+-- After Bob accepts an invitation to Alpha:
+--   select count(*) from public.workspaces where slug = 'alpha-iso';           -- 1
+--   select count(*) from public.documents where title = 'Secreto de Alice';   -- 1
+
+select 'RLS isolation protocol documented in comments of this file.' as instructions;
