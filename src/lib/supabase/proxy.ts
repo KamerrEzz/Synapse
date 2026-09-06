@@ -34,6 +34,7 @@ export async function updateSession(request: NextRequest) {
     path === "/" ||
     isAuthRoute ||
     path.startsWith("/invite") ||
+    path.startsWith("/skills") ||
     path === "/api/mcp" ||
     path.startsWith("/.well-known/");
 
