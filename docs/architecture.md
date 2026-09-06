@@ -33,6 +33,7 @@ El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (
 /[workspace]/files
 /[workspace]/ai
 /[workspace]/search
+/[workspace]/stats
 /[workspace]/settings
 /api/mcp                   MCP Streamable HTTP (Bearer, sin cookie)
 /.well-known/oauth-protected-resource
@@ -57,9 +58,9 @@ Tenant = `workspaces` + `workspace_members` (roles `owner` | `admin` | `member`)
 | `ai_conversations` / `ai_messages` | RAG + `sources` jsonb |
 | `user_openai_keys` | Ciphertext AES-GCM + last4; sin SELECT directo |
 | `mcp_tokens` | Hash SHA-256 del secreto MCP; last4; alcance opcional por workspace |
-| `usage_events` | Tokens IA (`kind = ai_tokens`) |
+| `usage_events` | Tokens IA (`kind` + `metadata` jsonb: modelo, origen, USD estimado) |
 
-RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `mcp_hybrid_search` (solo `service_role`), `list_own_mcp_tokens`, `insert_own_mcp_token`, `revoke_own_mcp_token`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
+RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `mcp_hybrid_search` (solo `service_role`), `list_own_mcp_tokens`, `insert_own_mcp_token`, `revoke_own_mcp_token`, `workspace_monthly_ai_tokens`, `workspace_index_totals` / `workspace_mcp_token_stats` (`p_user_id` opcional para MCP), `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
 
 Límites Free: `src/lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
 

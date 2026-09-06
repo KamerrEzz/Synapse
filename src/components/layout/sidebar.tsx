@@ -9,6 +9,7 @@ import {
   Sparkles,
   Settings,
   Search,
+  ChartColumn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -22,6 +23,7 @@ const NAV = [
   { href: "files", label: "Archivos", icon: FolderOpen },
   { href: "ai", label: "IA", icon: Sparkles },
   { href: "search", label: "Buscar", icon: Search },
+  { href: "stats", label: "Estadísticas", icon: ChartColumn },
   { href: "settings", label: "Ajustes", icon: Settings },
 ];
 

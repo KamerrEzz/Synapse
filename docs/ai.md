@@ -28,6 +28,7 @@ La UI llama a `/api/*`. El modelo **solo** responde con `knowledge_chunks` del w
 | LLM | System prompt: solo el contexto; citar `[#n]` |
 | Edge | `supabase/functions/rag-chat` y `process-file` existen para clientes externos; el browser no las llama |
 | Agentes | MCP en `/api/mcp` usa el mismo índice vía `mcp_hybrid_search`. CRUD wiki reindexa chunks. Ver [`mcp.md`](./mcp.md) |
+| Uso | `usage_events.metadata` (origen, modelo, prompt/completion, USD). Estadísticas en `/[workspace]/stats` |
 
 NaN (`https://api.nan.builders/v1`) y Helmcode (`https://api.helmcode.com/v1`) son el mismo contrato OpenAI. Chat típico `qwen3.6`; embeddings `qwen3-embedding` (docs dicen 4096; en vivo suele ser **1024**).
 

@@ -7,6 +7,7 @@ import {
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
+import { embedMeta, recordUsage } from "@/lib/stats/record";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { workspaceId?: string; query?: string };
@@ -29,9 +30,29 @@ export async function POST(request: Request) {
     );
   }
 
-  const [embedding] = await embedForWorkspace(ctx.supabase, body.workspaceId, [body.query], cred);
+  const { vectors, tokens } = await embedForWorkspace(
+    ctx.supabase,
+    body.workspaceId,
+    [body.query],
+    cred,
+  );
+  const [embedding] = vectors;
   try {
     const hits = await hybridSearch(ctx.supabase, body.workspaceId, body.query, embedding, 12);
+    if (ctx.user) {
+      await recordUsage(ctx.supabase, {
+        workspaceId: body.workspaceId,
+        userId: ctx.user.id,
+        kind: "embedding_tokens",
+        quantity: tokens,
+        meta: embedMeta({
+          source: "embed_search",
+          provider: cred.provider,
+          model: cred.embeddingModel,
+          tokens,
+        }),
+      });
+    }
     return NextResponse.json({ hits });
   } catch (err) {
     return NextResponse.json(

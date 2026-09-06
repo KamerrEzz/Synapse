@@ -7,6 +7,7 @@ import {
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
+import { blendedChatMeta, chatMeta, embedMeta, recordUsage } from "@/lib/stats/record";
 import { FREE_PLAN } from "@/lib/plans";
 import type { AiSource, SearchHit } from "@/types/database";
 
@@ -21,11 +22,13 @@ export async function POST(request: Request) {
   }
 
   const question = body.question;
+  const workspaceId = body.workspaceId;
 
   const ctx = await requireMember(body.workspaceId);
   if (ctx.error || !ctx.user) {
     return Response.json({ error: ctx.error }, { status: ctx.status });
   }
+  const userId = ctx.user.id;
 
   const { data: used } = await ctx.supabase.rpc("workspace_monthly_ai_tokens", {
     p_workspace_id: body.workspaceId,
@@ -48,7 +51,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const [embedding] = await embedForWorkspace(ctx.supabase, body.workspaceId, [body.question], cred);
+  const { vectors, tokens: embedTokens } = await embedForWorkspace(
+    ctx.supabase,
+    body.workspaceId,
+    [body.question],
+    cred,
+  );
+  const [embedding] = vectors;
   let retrieved: SearchHit[] = [];
   try {
     retrieved = await hybridSearch(
@@ -85,7 +94,7 @@ export async function POST(request: Request) {
       .from("ai_conversations")
       .insert({
         workspace_id: body.workspaceId,
-        user_id: ctx.user.id,
+        user_id: userId,
         title,
       })
       .select("id")
@@ -104,6 +113,7 @@ export async function POST(request: Request) {
   const stream = await client.chat.completions.create({
     model: cred.chatModel,
     stream: true,
+    stream_options: { include_usage: true },
     temperature: 0.2,
     messages: [
       {
@@ -120,6 +130,8 @@ export async function POST(request: Request) {
 
   const encoder = new TextEncoder();
   let full = "";
+  let promptTokens = 0;
+  let completionTokens = 0;
 
   const readable = new ReadableStream({
     async start(controller) {
@@ -129,6 +141,10 @@ export async function POST(request: Request) {
       send({ conversationId, sources });
       try {
         for await (const chunk of stream) {
+          if (chunk.usage) {
+            promptTokens = Number(chunk.usage.prompt_tokens ?? 0);
+            completionTokens = Number(chunk.usage.completion_tokens ?? 0);
+          }
           const token = chunk.choices[0]?.delta?.content ?? "";
           if (token) {
             full += token;
@@ -141,14 +157,41 @@ export async function POST(request: Request) {
           content: full,
           sources,
         });
-        const approxTokens = Math.ceil(
-          (question.length + full.length + context.length) / 4,
-        );
-        await ctx.supabase.from("usage_events").insert({
-          workspace_id: body.workspaceId,
-          user_id: ctx.user.id,
+        await recordUsage(ctx.supabase, {
+          workspaceId,
+          userId,
+          kind: "embedding_tokens",
+          quantity: embedTokens,
+          meta: embedMeta({
+            source: "rag_chat",
+            provider: cred.provider,
+            model: cred.embeddingModel,
+            tokens: embedTokens,
+          }),
+        });
+        const chatTokens =
+          promptTokens + completionTokens ||
+          Math.ceil((question.length + full.length + context.length) / 4);
+        await recordUsage(ctx.supabase, {
+          workspaceId,
+          userId,
           kind: "ai_tokens",
-          quantity: approxTokens,
+          quantity: chatTokens,
+          meta:
+            promptTokens || completionTokens
+              ? chatMeta({
+                  source: "rag_chat",
+                  provider: cred.provider,
+                  model: cred.chatModel,
+                  promptTokens,
+                  completionTokens,
+                })
+              : blendedChatMeta({
+                  source: "rag_chat",
+                  provider: cred.provider,
+                  model: cred.chatModel,
+                  tokens: chatTokens,
+                }),
         });
         send({ done: true, conversationId });
       } catch (err) {

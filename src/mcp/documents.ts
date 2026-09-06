@@ -3,6 +3,7 @@ import { chunkText } from "@/lib/ai/chunk";
 import { embedTexts } from "@/lib/ai/embed";
 import { yjsStateHexFromPlainText } from "@/lib/collab/yjs-from-plain";
 import { FREE_PLAN } from "@/lib/plans";
+import { embedMeta, recordUsage } from "@/lib/stats/record";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   assertWorkspaceAccess,
@@ -50,7 +51,7 @@ async function reindexWiki(
   if (chunks.length === 0) return { chunks: 0 };
 
   const cred = await credLoader(session.userId);
-  const embeddings = await embedTexts(chunks, cred);
+  const { vectors: embeddings, tokens } = await embedTexts(chunks, cred);
   const dim = embeddings[0]?.length ?? 0;
   const { data: ws, error: wsError } = await admin
     .from("workspaces")
@@ -80,6 +81,18 @@ async function reindexWiki(
     })),
   );
   if (error) throw new Error(error.message);
+  await recordUsage(admin, {
+    workspaceId,
+    userId: session.userId,
+    kind: "embedding_tokens",
+    quantity: tokens,
+    meta: embedMeta({
+      source: "mcp_reindex",
+      provider: cred.provider,
+      model: cred.embeddingModel,
+      tokens,
+    }),
+  });
   return { chunks: chunks.length };
 }
 

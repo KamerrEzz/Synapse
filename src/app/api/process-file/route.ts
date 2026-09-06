@@ -8,6 +8,7 @@ import {
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
+import { embedMeta, recordUsage } from "@/lib/stats/record";
 import { FREE_PLAN } from "@/lib/plans";
 
 export async function POST(request: Request) {
@@ -87,7 +88,12 @@ export async function POST(request: Request) {
       }
       throw err;
     }
-    const embeddings = await embedForWorkspace(ctx.supabase, body.workspaceId, chunks, cred);
+    const { vectors: embeddings, tokens } = await embedForWorkspace(
+      ctx.supabase,
+      body.workspaceId,
+      chunks,
+      cred,
+    );
     const rows = chunks.map((content, index) => ({
       workspace_id: body.workspaceId,
       source_type: "file" as const,
@@ -101,12 +107,24 @@ export async function POST(request: Request) {
     const { error: insertError } = await ctx.supabase.from("knowledge_chunks").insert(rows);
     if (insertError) throw insertError;
 
-    const tokens = chunks.join(" ").split(/\s+/).length;
-    await ctx.supabase.from("usage_events").insert({
-      workspace_id: body.workspaceId,
-      user_id: ctx.user.id,
+    await recordUsage(ctx.supabase, {
+      workspaceId: body.workspaceId,
+      userId: ctx.user.id,
       kind: "embedding_tokens",
       quantity: tokens,
+      meta: embedMeta({
+        source: "embed_file",
+        provider: cred.provider,
+        model: cred.embeddingModel,
+        tokens,
+      }),
+    });
+    await recordUsage(ctx.supabase, {
+      workspaceId: body.workspaceId,
+      userId: ctx.user.id,
+      kind: "file_upload",
+      quantity: Number(file.size ?? 0),
+      meta: { source: "file_upload", estimated_usd: 0 },
     });
 
     await ctx.supabase

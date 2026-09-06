@@ -62,6 +62,13 @@ test.describe("authenticated workspace flow", () => {
       timeout: 60_000,
     });
 
+    await page.getByRole("link", { name: "Estadísticas" }).click();
+    await expect(page.getByRole("heading", { name: "Estadísticas" })).toBeVisible({
+      timeout: 60_000,
+    });
+    await expect(page.getByText("Coste IA (rango)")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Todo" })).toBeVisible();
+
     await page.getByRole("link", { name: "Ajustes" }).click();
     await expect(page.getByRole("heading", { name: "Ajustes" })).toBeVisible({
       timeout: 60_000,

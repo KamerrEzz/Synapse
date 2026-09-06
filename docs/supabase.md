@@ -26,6 +26,9 @@ Aplicar en orden. No reescribir `0001` en producción; añadir archivos nuevos.
 | `0008_hybrid_search_return_types.sql` | `hybrid_search`: CTE `hit_*`, `score::double precision` (si no, `structure of query does not match function result type`) |
 | `0009_hybrid_search_distance_gate.sql` | `hybrid_search`: k-NN semántico solo si distancia coseno `< 0.42`. FTS no usa ese umbral |
 | `0010_mcp_tokens.sql` | `mcp_tokens` (hash SHA-256), RPCs de alta/lista/revoca, `mcp_hybrid_search(p_user_id)` solo `service_role` |
+| `0011_usage_metadata_stats.sql` | `usage_events.metadata` jsonb; `workspace_index_totals` y `workspace_mcp_token_stats` para Estadísticas |
+| `0012_index_totals_indexed_ids.sql` | `workspace_index_totals` incluye todos los `indexed_document_ids` (cobertura wiki exacta, no solo top 25) |
+| `0013_stats_rpcs_for_mcp.sql` | Esos RPCs aceptan `p_user_id` opcional para `service_role` (MCP) |
 
 ### `0004` y `realtime.messages`
 

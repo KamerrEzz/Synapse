@@ -7,6 +7,7 @@ import {
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
+import { embedMeta, recordUsage } from "@/lib/stats/record";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { documentId?: string; workspaceId?: string };
@@ -52,7 +53,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const embeddings = await embedForWorkspace(ctx.supabase, body.workspaceId, chunks, cred);
+  const { vectors: embeddings, tokens } = await embedForWorkspace(
+    ctx.supabase,
+    body.workspaceId,
+    chunks,
+    cred,
+  );
   const rows = chunks.map((content, index) => ({
     workspace_id: body.workspaceId,
     source_type: "document" as const,
@@ -67,6 +73,19 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await recordUsage(ctx.supabase, {
+    workspaceId: body.workspaceId,
+    userId: ctx.user.id,
+    kind: "embedding_tokens",
+    quantity: tokens,
+    meta: embedMeta({
+      source: "embed_document",
+      provider: cred.provider,
+      model: cred.embeddingModel,
+      tokens,
+    }),
+  });
 
   return NextResponse.json({ ok: true, chunks: rows.length });
 }

@@ -19,6 +19,7 @@ export type Workspace = {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  embedding_dim?: number | null;
 };
 
 export type WorkspaceMember = {

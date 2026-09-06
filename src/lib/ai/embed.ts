@@ -3,8 +3,13 @@ import type { AiCred } from "@/lib/ai/user-key";
 import { compatibleClient } from "@/lib/ai/provider";
 import { claimWorkspaceEmbeddingDim } from "@/lib/ai/user-key";
 
-export async function embedTexts(texts: string[], cred: AiCred): Promise<number[][]> {
-  if (texts.length === 0) return [];
+export type EmbedBatch = {
+  vectors: number[][];
+  tokens: number;
+};
+
+export async function embedTexts(texts: string[], cred: AiCred): Promise<EmbedBatch> {
+  if (texts.length === 0) return { vectors: [], tokens: 0 };
   const client = compatibleClient(cred.apiKey, cred.baseUrl);
   const response = await client.embeddings.create({
     model: cred.embeddingModel,
@@ -20,7 +25,8 @@ export async function embedTexts(texts: string[], cred: AiCred): Promise<number[
   if (vectors.some((vec) => vec.length !== dim)) {
     throw new Error("Los embeddings no tienen la misma dimensión");
   }
-  return vectors;
+  const tokens = Number(response.usage?.prompt_tokens ?? response.usage?.total_tokens ?? 0);
+  return { vectors, tokens };
 }
 
 export async function embedForWorkspace(
@@ -28,8 +34,10 @@ export async function embedForWorkspace(
   workspaceId: string,
   texts: string[],
   cred: AiCred,
-) {
-  const vectors = await embedTexts(texts, cred);
-  await claimWorkspaceEmbeddingDim(supabase, workspaceId, vectors[0].length);
-  return vectors;
+): Promise<EmbedBatch> {
+  const batch = await embedTexts(texts, cred);
+  if (batch.vectors[0]) {
+    await claimWorkspaceEmbeddingDim(supabase, workspaceId, batch.vectors[0].length);
+  }
+  return batch;
 }
