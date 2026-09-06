@@ -6,6 +6,7 @@ Endpoint Streamable HTTP para que un agente (Cursor, Claude, OpenCode, etc.) lea
 
 1. Ajustes → **Agentes MCP** → crear token (se muestra una vez).
 2. El cliente manda `Authorization: Bearer syn_mcp_…`. **No hay OAuth.**
+3. Skills descargables (Ajustes o `/skills/`): `synapse-mcp` (conexión), `synapse-knowledge` (fuente de verdad), `synapse-sdd` (Artifact Store en la wiki), `synapse-memory` (notas ocasionales). Pegar en `.cursor/skills/`, `.claude/skills/` u OpenCode. El token no va en el skill.
 
 ### OpenCode
 

@@ -3,6 +3,7 @@ import { InviteForm, ProfileForm } from "@/components/settings/settings-forms";
 import { OpenAIKeyForm } from "@/components/settings/openai-key-form";
 import { WorkspaceAiModeForm } from "@/components/settings/workspace-ai-mode-form";
 import { McpTokensForm } from "@/components/settings/mcp-tokens-form";
+import { McpSkillsDownload } from "@/components/settings/mcp-skills-download";
 import { PageHeader, Panel, pageNarrow } from "@/components/layout/page-chrome";
 import { Badge } from "@/components/ui/badge";
 import { FREE_PLAN } from "@/lib/plans";
@@ -68,6 +69,7 @@ export default async function SettingsPage({
         <h2 className="font-display text-xl">Agentes MCP</h2>
         <div className="mt-4">
           <McpTokensForm workspaceId={ctx.workspace.id} />
+          <McpSkillsDownload />
         </div>
       </Panel>
 
