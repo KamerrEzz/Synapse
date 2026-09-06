@@ -78,10 +78,10 @@ Insert en `public.messages`. El remitente pinta el row del `insert … select`. 
 
 ## RAG
 
+Detalle (BYOK, dim, RPC, incidentes, checklist para otro repo): [`ai.md`](./ai.md).
+
 1. Archivo → Storage + fila `files` → `POST /api/process-file` (extract, chunk, embed, `knowledge_chunks`).
-2. Documento: `POST /api/index-document` sobre `plain_text`.
-3. Pregunta → embedding → `hybrid_search` (RRF: coseno + `plainto_tsquery('spanish', …)`) → chat OpenAI con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
+2. Documento: `POST /api/index-document` sobre `plain_text` (al guardar / unmount / ~8s).
+3. Pregunta → embedding → `hybrid_search` (RRF: coseno + `plainto_tsquery('spanish', …)`) → chat con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
 
-La clave es por usuario (BYOK) y vale cualquier API compatible con OpenAI (`baseURL` + key). Next cifra con AES-256-GCM (`SYNAPSE_APP_SECRET`) y no hay fallback a `OPENAI_API_KEY`. Sin clave: IA bloqueada, embeddings y búsqueda semántica 409 `missing_ai_key`. El workspace fija la dimensión con lo que **devuelve el modelo** al indexar (`claim_workspace_embedding_dim`). Si aún no hay vectores, se puede cambiar de dimensión. Los presets (4096 en la ficha de NaN) no se imponen: `qwen3-embedding` en la práctica suele devolver 1024.
-
-Modelos: los guarda cada usuario (p.ej. OpenAI `gpt-4.1-mini` + `text-embedding-3-small`, o NaN `qwen3.6` + `qwen3-embedding`). La dim real la marca la respuesta del API.
+La clave es por usuario (BYOK). Next cifra con AES-256-GCM (`SYNAPSE_APP_SECRET`); no hay fallback a `OPENAI_API_KEY`. Sin clave: 409 `missing_ai_key`. El workspace fija la dimensión con lo que **devuelve el modelo** (`claim_workspace_embedding_dim`). Los presets del catálogo no se imponen (`qwen3-embedding` suele ser 1024, no 4096).

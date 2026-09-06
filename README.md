@@ -2,7 +2,7 @@
 
 Knowledge base colaborativa, chat en tiempo real y RAG privado por workspace.
 
-Documentación de implementación: [`docs/`](./docs/README.md). Spec de producto: [`project.md`](./project.md).
+Documentación de implementación: [`docs/`](./docs/README.md) (incluye [cómo está la IA](./docs/ai.md)). Spec de producto: [`project.md`](./project.md).
 
 ## Stack
 
