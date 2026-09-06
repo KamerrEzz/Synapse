@@ -45,6 +45,7 @@ html,
 body {
   background: var(--ink);
   color: var(--paper);
+  color-scheme: dark;
   min-height: 100%;
 }
 
@@ -60,62 +61,145 @@ body {
   font-family: var(--font-source-serif), ui-serif, Georgia, serif;
 }
 
-.tiptap {
-  outline: none;
-  min-height: 60vh;
-  color: var(--ink-text);
+.doc-page {
+  border-left: 2px solid color-mix(in srgb, var(--spark) 55%, transparent);
+  max-width: 42rem;
+  padding-left: 1.25rem;
+  text-rendering: optimizeLegibility;
+}
+
+.doc-title {
+  color: #e2d8ca;
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.tiptap,
+.ProseMirror {
+  background: transparent;
+  caret-color: var(--spark);
+  color: #c3b7a6;
   font-family: var(--font-source-serif), ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
   font-size: 1.125rem;
-  line-height: 1.75;
+  line-height: 1.65;
+  max-width: 65ch;
+  min-height: 6rem;
+  outline: none;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.tiptap ::selection,
+.ProseMirror ::selection {
+  background: rgba(212, 160, 84, 0.28);
+}
+
+.tiptap p {
+  margin: 0;
+}
+
+.tiptap p:first-child {
+  margin-top: 1.15rem;
+}
+
+.tiptap p + p {
+  margin-top: 0.55em;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
+  color: #6f675d;
   content: attr(data-placeholder);
   float: left;
-  color: #9c9488;
-  pointer-events: none;
+  font-style: italic;
   height: 0;
+  pointer-events: none;
 }
 
 .tiptap h1 {
-  font-size: 2rem;
-  font-weight: 600;
-  margin: 1.5rem 0 0.75rem;
+  color: #e2d8ca;
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+  font-size: 1.5rem;
+  font-weight: 500;
   letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin: 1.5rem 0 0.45rem;
 }
 
 .tiptap h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 1.25rem 0 0.5rem;
+  color: #d8ccbc;
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 1.25rem 0 0.4rem;
 }
 
 .tiptap ul,
 .tiptap ol {
-  padding-left: 1.4rem;
-  margin: 0.5rem 0;
+  margin: 0.55rem 0;
+  padding-left: 1.25rem;
+}
+
+.tiptap li {
+  margin: 0.15rem 0;
+}
+
+.tiptap li::marker {
+  color: var(--spark);
 }
 
 .tiptap blockquote {
-  border-left: 3px solid var(--spark);
-  padding-left: 1rem;
-  color: #5c554c;
+  border-left: 2px solid var(--spark);
+  color: #a89e90;
+  font-style: italic;
   margin: 1rem 0;
+  padding-left: 0.9rem;
+}
+
+.tiptap a {
+  color: var(--spark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiptap u {
+  text-underline-offset: 3px;
+}
+
+.tiptap hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 1.5rem 0;
 }
 
 .tiptap code {
-  background: #e8e0d4;
+  background: var(--raised);
   border-radius: 4px;
-  padding: 0.1rem 0.35rem;
-  font-size: 0.9em;
+  color: #e2d8ca;
+  font-size: 0.88em;
+  padding: 0.12rem 0.35rem;
 }
 
 .tiptap pre {
-  background: #1c1814;
-  color: var(--paper);
+  background: var(--raised);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 1rem;
+  color: #c3b7a6;
+  margin: 1rem 0;
   overflow-x: auto;
+  padding: 0.9rem 1rem;
+}
+
+.tiptap pre code {
+  background: transparent;
+  padding: 0;
 }
 
 .collaboration-carets__caret {

@@ -7,14 +7,16 @@ import StarterKit from "@tiptap/starter-kit";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
+import NextLink from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   YSupabaseProvider,
   colorForUser,
 } from "@/lib/collab/y-supabase-provider";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { EditorToolbar } from "@/components/documents/editor-toolbar";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/database";
 
 type Props = {
@@ -43,6 +45,7 @@ export function CollaborativeEditor({
   const indexTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleRef = useRef(title);
   titleRef.current = title;
+  const editorRef = useRef<Editor | null>(null);
 
   const user = useMemo(
     () => ({
@@ -68,21 +71,50 @@ export function CollaborativeEditor({
     {
       immediatelyRender: false,
       extensions: [
-        StarterKit.configure({ undoRedo: false }),
-        Placeholder.configure({ placeholder: "Empieza a escribir…" }),
-        Link.configure({ openOnClick: false }),
+        StarterKit.configure({
+          undoRedo: false,
+          link: { openOnClick: false },
+        }),
+        Placeholder.configure({ placeholder: "La primera línea…" }),
         Collaboration.configure({ document: ydoc }),
         CollaborationCaret.configure({
           provider,
           user: { name: user.name, color: user.color },
         }),
       ],
+      editorProps: {
+        attributes: {
+          class: "tiptap",
+        },
+      },
     },
     [provider],
   );
 
-  const editorRef = useRef<Editor | null>(null);
   editorRef.current = editor;
+
+  const persistAndIndex = (text: string, title: string) => {
+    void provider.persistNow(text, title).then(() => {
+      void fetch("/api/index-document", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId, workspaceId }),
+      });
+    });
+  };
+
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!editor) return;
+    const bump = () => setTick((n) => n + 1);
+    editor.on("transaction", bump);
+    editor.on("selectionUpdate", bump);
+    return () => {
+      editor.off("transaction", bump);
+      editor.off("selectionUpdate", bump);
+    };
+  }, [editor]);
 
   useEffect(() => {
     void provider.connect();
@@ -96,10 +128,10 @@ export function CollaborativeEditor({
     provider.awareness.on("update", syncUsers);
     return () => {
       const text = editorRef.current?.getText() ?? "";
-      void provider.persistNow(text, titleRef.current);
+      persistAndIndex(text, titleRef.current);
       provider.destroy();
     };
-  }, [provider]);
+  }, [provider, documentId, workspaceId]);
 
   useEffect(() => {
     if (!editor) return;
@@ -113,7 +145,7 @@ export function CollaborativeEditor({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ documentId, workspaceId }),
         });
-      }, 30000);
+      }, 8000);
     };
     editor.on("update", persist);
     return () => {
@@ -122,34 +154,46 @@ export function CollaborativeEditor({
     };
   }, [editor, provider, documentId, workspaceId]);
 
+  const statusLabel =
+    status === "connected" ? "En vivo" : status === "connecting" ? "Conectando…" : "Sin conexión";
+
   return (
-    <div className="flex min-h-screen flex-col bg-ink">
-      <header className="flex items-center gap-4 border-b border-line px-6 py-3">
-        <a href={`/${slug}/documents`} className="text-sm text-mist hover:text-paper">
+    <div className="flex h-[100dvh] flex-col bg-ink">
+      <header className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line px-6 py-2">
+        <NextLink
+          href={`/${slug}/documents`}
+          className="inline-flex items-center gap-1.5 justify-self-start text-sm text-mist hover:text-paper"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
           Documentos
-        </a>
-        <Input
-          value={title}
-          onChange={(e) => {
-            setTitle(e.target.value);
-            provider.schedulePersist(editor?.getText() ?? "", e.target.value);
-          }}
-          className="max-w-md border-transparent bg-transparent text-lg font-medium"
-        />
-        <div className="ml-auto flex items-center gap-3">
-          <span className="text-xs text-mist">
-            {status === "connected"
-              ? "En vivo"
-              : status === "connecting"
-                ? "Conectando…"
-                : "Sin conexión"}
+        </NextLink>
+        <div className="min-w-0 overflow-x-auto">
+          <EditorToolbar editor={editor} />
+        </div>
+        <div className="flex items-center justify-self-end gap-3">
+          <span
+            className="inline-flex items-center gap-1.5 text-[11px] text-mist"
+            data-revision={tick}
+          >
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                status === "connected"
+                  ? "bg-ok"
+                  : status === "connecting"
+                    ? "bg-spark"
+                    : "bg-danger",
+              )}
+              aria-hidden
+            />
+            {statusLabel}
           </span>
           <div className="flex -space-x-2">
             {users.map((u, i) => (
               <span
                 key={`${u.name}-${i}`}
                 title={u.name}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-medium text-ink"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-medium text-ink ring-2 ring-ink"
                 style={{ background: u.color }}
               >
                 {u.name.slice(0, 1)}
@@ -158,16 +202,32 @@ export function CollaborativeEditor({
           </div>
           <Button
             size="sm"
-            variant="secondary"
-            onClick={() => provider.persistNow(editor?.getText() ?? "", title)}
+            variant="ghost"
+            onClick={() => persistAndIndex(editor?.getText() ?? "", title)}
           >
             Guardar
           </Button>
         </div>
       </header>
-      <div className="flex-1 overflow-auto bg-ink px-4 py-8">
-        <div className="mx-auto min-h-[70vh] max-w-3xl rounded-sm bg-paper px-12 py-14 text-ink-text shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
-          <EditorContent editor={editor} />
+
+      <div className="flex-1 overflow-auto">
+        <div className="mx-auto w-full max-w-5xl px-8">
+          <article className="doc-page py-10 sm:py-12">
+            <label className="sr-only" htmlFor="document-title">
+              Título del documento
+            </label>
+            <input
+              id="document-title"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                provider.schedulePersist(editor?.getText() ?? "", e.target.value);
+              }}
+              placeholder="Sin título"
+              className="doc-title w-full bg-transparent outline-none placeholder:text-[#6f675d] focus-visible:ring-0"
+            />
+            <EditorContent editor={editor} />
+          </article>
         </div>
       </div>
     </div>

@@ -44,7 +44,9 @@ export default async function DocumentsPage({
                 className="flex items-baseline justify-between gap-4 px-5 py-4 hover:bg-raised/50"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-base text-paper">{doc.title || "Sin título"}</p>
+                  <p className="truncate font-display text-lg tracking-tight text-paper">
+                    {doc.title || "Sin título"}
+                  </p>
                   <p className="mt-1 line-clamp-1 text-sm text-mist">
                     {doc.plain_text || "Vacío"}
                   </p>
