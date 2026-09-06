@@ -90,6 +90,6 @@ Detalle (BYOK, dim, RPC, incidentes, checklist para otro repo): [`ai.md`](./ai.m
 
 1. Archivo → Storage + fila `files` → `POST /api/process-file` (extract, chunk, embed, `knowledge_chunks`).
 2. Documento: `POST /api/index-document` sobre `plain_text` (al guardar / unmount / ~8s).
-3. Pregunta → embedding → `hybrid_search` (RRF: coseno con distancia `< 0.42` + `plainto_tsquery('spanish', …)`) → chat con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
+3. Pregunta → embedding → `hybrid_search` (RRF: coseno con distancia `< 0.42` + FTS de título y contenido) → chat con instrucción de no inventar fuera del contexto → citas en `ai_messages.sources`.
 
 La clave es por usuario (BYOK). Next cifra con AES-256-GCM (`SYNAPSE_APP_SECRET`); no hay fallback a `OPENAI_API_KEY`. El workspace elige `ai_key_mode`: cada miembro o la clave del owner resuelta en el servidor. Sin clave usable: 409 `missing_ai_key`. El workspace fija la dimensión con lo que **devuelve el modelo** (`claim_workspace_embedding_dim`). Los presets del catálogo no se imponen (`qwen3-embedding` suele ser 1024, no 4096).

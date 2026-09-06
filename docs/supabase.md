@@ -29,6 +29,8 @@ Aplicar en orden. No reescribir `0001` en producción; añadir archivos nuevos.
 | `0011_usage_metadata_stats.sql` | `usage_events.metadata` jsonb; `workspace_index_totals` y `workspace_mcp_token_stats` para Estadísticas |
 | `0012_index_totals_indexed_ids.sql` | `workspace_index_totals` incluye todos los `indexed_document_ids` (cobertura wiki exacta, no solo top 25) |
 | `0013_stats_rpcs_for_mcp.sql` | Esos RPCs aceptan `p_user_id` opcional para `service_role` (MCP) |
+| `0014_workspace_ai_key_mode.sql` | `workspaces.ai_key_mode` (`personal` \| `shared`): clave de cada miembro o la del owner en el servidor |
+| `0015_hybrid_search_title_or.sql` | FTS de título+contenido; lexemas de la pregunta en OR; boost si pega el título |
 
 ### `0004` y `realtime.messages`
 
