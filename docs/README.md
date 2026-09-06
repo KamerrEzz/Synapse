@@ -8,6 +8,7 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 |-----------|-----------|
 | [architecture.md](./architecture.md) | Capas, rutas, datos, RLS, collab, RAG (resumen) |
 | [ai.md](./ai.md) | BYOK, embeddings, índice híbrido, RAG, incidentes; contrato para copiar |
+| [mcp.md](./mcp.md) | Servidor MCP HTTP, tokens Bearer, tools para agentes |
 | [environment.md](./environment.md) | Variables, dashboard, Auth, Realtime, SMTP |
 | [supabase.md](./supabase.md) | Carpeta `supabase/`, migraciones, funciones, buckets |
 | [decisions.md](./decisions.md) | Decisiones cerradas (ADR) |
@@ -15,7 +16,7 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 ## Arranque
 
 1. Copiar [`.env.example`](../.env.example) a `.env.local`.
-2. Aplicar migraciones en el proyecto Supabase (`0001`–`0009`).
+2. Aplicar migraciones en el proyecto Supabase (`0001`–`0010`).
 3. `npm install` y `npm run dev` (Next 16 usa `src/proxy.ts`, no `middleware.ts`). El código de la app vive en `src/`.
 4. `npm run test:e2e` para Playwright.
 
@@ -26,5 +27,6 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 - La UI llama a `/api/*`. `supabase/functions/` es la copia desplegable, no el path que usa el browser en local.
 - `is_public` en `documents` no entra en RLS ni en la UI.
 - IA: ver [`ai.md`](./ai.md). APIs compatibles con OpenAI. Dimensión de embeddings = lo que devuelve el modelo, por workspace.
+- MCP: ver [`mcp.md`](./mcp.md). Tokens en Ajustes; no poner el secreto en git.
 - UI en español. Commits: conventional commits atómicos.
 - `AGENTS.md` / `CLAUDE.md` los regenera `next dev`; no son spec del producto.

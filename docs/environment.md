@@ -8,7 +8,7 @@ Definición: [`.env.example`](../.env.example). Valores reales: `.env.local` (gi
 |----------|--------|-----|
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser + server | URL del proyecto (`https://<ref>.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server | JWT anon legacy (`eyJ…`). Evitar `sb_publishable_…` con `@supabase/supabase-js` 2.57 |
-| `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor | Admin Auth / bypass RLS. No exponer al cliente |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor | Admin Auth / bypass RLS. **Obligatoria para MCP** (`src/lib/supabase/admin.ts`). No exponer al cliente |
 | `SYNAPSE_APP_SECRET` | Solo servidor | ≥32 caracteres. Secreto de aplicación (cifra credenciales de IA). Acepta el alias antiguo `OPENAI_KEY_ENCRYPTION_SECRET` si aún está en el entorno |
 | `OPENAI_API_KEY` | Secrets de Edge Functions (opcional) | Next **no** la usa |
 | `OPENAI_CHAT_MODEL` / `OPENAI_EMBEDDING_MODEL` | Edge Functions (opcional) | Next usa los modelos de la credencial del usuario |

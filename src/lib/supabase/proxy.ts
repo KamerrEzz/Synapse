@@ -33,7 +33,9 @@ export async function updateSession(request: NextRequest) {
   const isPublic =
     path === "/" ||
     isAuthRoute ||
-    path.startsWith("/invite");
+    path.startsWith("/invite") ||
+    path === "/api/mcp" ||
+    path.startsWith("/.well-known/");
 
   if (!user && !isPublic) {
     const login = new URL("/login", request.url);

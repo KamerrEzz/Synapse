@@ -68,5 +68,6 @@ test.describe("authenticated workspace flow", () => {
     });
     await expect(page.getByText(/plan free/i)).toBeVisible();
     await expect(page.getByText("Clave de IA")).toBeVisible();
+    await expect(page.getByText("Agentes MCP")).toBeVisible();
   });
 });

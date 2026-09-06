@@ -108,6 +108,15 @@ export type AiMessage = {
   created_at: string;
 };
 
+export type McpToken = {
+  id: string;
+  name: string;
+  last4: string;
+  workspace_id: string | null;
+  last_used_at: string | null;
+  created_at: string;
+};
+
 export type SearchHit = {
   id: string;
   content: string;

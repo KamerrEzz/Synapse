@@ -25,6 +25,7 @@ Aplicar en orden. No reescribir `0001` en producción; añadir archivos nuevos.
 | `0007_claim_embedding_dim_if_empty.sql` | Si no hay vectores, se puede cambiar la dimensión (p.ej. tras un indexado fallido) |
 | `0008_hybrid_search_return_types.sql` | `hybrid_search`: CTE `hit_*`, `score::double precision` (si no, `structure of query does not match function result type`) |
 | `0009_hybrid_search_distance_gate.sql` | `hybrid_search`: k-NN semántico solo si distancia coseno `< 0.42`. FTS no usa ese umbral |
+| `0010_mcp_tokens.sql` | `mcp_tokens` (hash SHA-256), RPCs de alta/lista/revoca, `mcp_hybrid_search(p_user_id)` solo `service_role` |
 
 ### `0004` y `realtime.messages`
 

@@ -85,7 +85,8 @@ export async function getUserOpenAIMeta(supabase: SupabaseClient): Promise<AiCre
   if (error) throw new Error(error.message);
   const row = data as MetaRow | null;
   if (!row?.last4) return fallback;
-  const provider = isAiProviderId(row.provider ?? "") ? row.provider : "openai";
+  const raw = row.provider ?? "openai";
+  const provider = isAiProviderId(raw) ? raw : "openai";
   const preset = AI_PRESETS[provider];
   return {
     configured: true,

@@ -10,6 +10,8 @@ Synapse es una app Next.js 16 (App Router) con backend en Supabase: Auth, Postgr
 | Proxy | `src/proxy.ts` → `src/lib/supabase/proxy.ts` | Refresco de sesión y redirects |
 | Clientes Supabase | `src/lib/supabase/client.ts`, `server.ts` | Anon key + cookies (`@supabase/ssr`) |
 | APIs Next | `src/app/api/*` | JWT + membresía; OpenAI en el servidor |
+| MCP | `src/mcp/`, `/api/mcp` | Streamable HTTP para agentes (Bearer) |
+| Admin | `src/lib/supabase/admin.ts` | `service_role` solo servidor (MCP) |
 | Postgres | `supabase/migrations/` | Tablas, RLS, RPCs |
 | Edge Functions | `supabase/functions/` | Mismo contrato que `/api/*` para deploy remoto |
 | Collab | `src/lib/collab/y-supabase-provider.ts` | Yjs por Broadcast privado |
@@ -32,9 +34,11 @@ El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (
 /[workspace]/ai
 /[workspace]/search
 /[workspace]/settings
+/api/mcp                   MCP Streamable HTTP (Bearer, sin cookie)
+/.well-known/oauth-protected-resource
 ```
 
-Públicas para el proxy: `/`, `/login`, `/auth/*`, `/invite/*`. El resto exige sesión. Usuario autenticado en `/` o `/login` → `/workspaces`.
+Públicas para el proxy: `/`, `/login`, `/auth/*`, `/invite/*`, `/api/mcp`, `/.well-known/*`. El resto exige sesión. Usuario autenticado en `/` o `/login` → `/workspaces`.
 
 `src/app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`. El chrome es `WorkspaceShell`: sidebar fijo desde `lg`, barra + drawer debajo.
 
@@ -52,13 +56,14 @@ Tenant = `workspaces` + `workspace_members` (roles `owner` | `admin` | `member`)
 | `channels` / `messages` | Chat; canal `general` al crear workspace |
 | `ai_conversations` / `ai_messages` | RAG + `sources` jsonb |
 | `user_openai_keys` | Ciphertext AES-GCM + last4; sin SELECT directo |
+| `mcp_tokens` | Hash SHA-256 del secreto MCP; last4; alcance opcional por workspace |
 | `usage_events` | Tokens IA (`kind = ai_tokens`) |
 
-RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
+RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `mcp_hybrid_search` (solo `service_role`), `list_own_mcp_tokens`, `insert_own_mcp_token`, `revoke_own_mcp_token`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
 
 Límites Free: `src/lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
 
-Código de aplicación en `src/` (`app`, `components`, `lib`, `types`, `proxy.ts`). `public/`, `supabase/`, `docs/` y config quedan en la raíz.
+Código de aplicación en `src/` (`app`, `components`, `lib`, `mcp`, `types`, `proxy.ts`). `public/`, `supabase/`, `docs/` y config quedan en la raíz. Detalle MCP: [`mcp.md`](./mcp.md).
 
 ## RLS
 

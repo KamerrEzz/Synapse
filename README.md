@@ -13,6 +13,7 @@ Next.js 16 (App Router) + TypeScript + Tailwind + Supabase (Auth, Postgres, RLS,
 1. Copia [`.env.example`](.env.example) a `.env.local` y rellena:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (servidor; hace falta para MCP)
    - `SYNAPSE_APP_SECRET` (mínimo 32 caracteres; secreto de aplicación)
    - `NEXT_PUBLIC_SITE_URL` (p.ej. `http://localhost:3000`)
 2. En el dashboard de Supabase:
@@ -45,9 +46,10 @@ npx supabase functions deploy generate-title
 - Chat por canales (`postgres_changes`)
 - Archivos → chunks + embeddings
 - Chat IA grounded (búsqueda híbrida FTS + pgvector) con citas; cada usuario pone su API key de OpenAI en Ajustes
+- MCP Streamable HTTP en `/api/mcp` para agentes (tokens en Ajustes)
 - Invitaciones por enlace, búsqueda, límites del plan Free
 - Tests de aislamiento documentados en [`supabase/tests/rls.sql`](supabase/tests/rls.sql)
 
 ## Seguridad
 
-Nunca pongas `service_role` en el cliente. Las Edge Functions y las rutas `/api` validan JWT y membresía. Los documentos públicos existen en schema pero no se exponen en la UI ni en las policies.
+Nunca pongas `service_role` en el cliente. Las Edge Functions y las rutas `/api` validan JWT y membresía. MCP usa `service_role` solo en el servidor, tras comprobar el token y la membresía. Los documentos públicos existen en schema pero no se exponen en la UI ni en las policies.

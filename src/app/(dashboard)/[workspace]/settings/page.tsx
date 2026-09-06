@@ -1,6 +1,7 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { InviteForm, ProfileForm } from "@/components/settings/settings-forms";
 import { OpenAIKeyForm } from "@/components/settings/openai-key-form";
+import { McpTokensForm } from "@/components/settings/mcp-tokens-form";
 import { PageHeader, Panel, pageNarrow } from "@/components/layout/page-chrome";
 import { Badge } from "@/components/ui/badge";
 import { FREE_PLAN } from "@/lib/plans";
@@ -44,6 +45,13 @@ export default async function SettingsPage({
         <h2 className="font-display text-xl">Clave de IA</h2>
         <div className="mt-4">
           <OpenAIKeyForm />
+        </div>
+      </Panel>
+
+      <Panel>
+        <h2 className="font-display text-xl">Agentes MCP</h2>
+        <div className="mt-4">
+          <McpTokensForm workspaceId={ctx.workspace.id} />
         </div>
       </Panel>
 

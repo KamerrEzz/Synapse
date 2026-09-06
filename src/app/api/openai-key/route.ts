@@ -13,15 +13,13 @@ async function requireSession() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    return { error: Response.json({ error: "No autenticado" }, { status: 401 }) };
-  }
+  if (!user) return null;
   return { supabase, user };
 }
 
 export async function GET() {
   const ctx = await requireSession();
-  if (!("supabase" in ctx)) return ctx.error;
+  if (!ctx) return Response.json({ error: "No autenticado" }, { status: 401 });
   try {
     const meta = await getUserOpenAIMeta(ctx.supabase);
     return Response.json(meta);
@@ -33,7 +31,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   const ctx = await requireSession();
-  if (!("supabase" in ctx)) return ctx.error;
+  if (!ctx) return Response.json({ error: "No autenticado" }, { status: 401 });
   const body = (await request.json()) as {
     key?: string;
     provider?: string;
@@ -90,7 +88,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE() {
   const ctx = await requireSession();
-  if (!("supabase" in ctx)) return ctx.error;
+  if (!ctx) return Response.json({ error: "No autenticado" }, { status: 401 });
   const { error } = await ctx.supabase.rpc("delete_own_openai_key");
   if (error) return Response.json({ error: error.message }, { status: 400 });
   return Response.json({ configured: false });
