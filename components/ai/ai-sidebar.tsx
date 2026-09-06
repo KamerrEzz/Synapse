@@ -12,11 +12,11 @@ export function AiSidebar({
   activeId: string | null;
 }) {
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-shell">
+    <>
       <div className="border-b border-line px-4 py-4">
         <Link
           href={`/${slug}/ai`}
-          className="inline-flex h-9 items-center rounded-lg bg-spark px-3 text-sm font-medium text-ink hover:bg-spark-hover"
+          className="inline-flex h-11 items-center rounded-lg bg-spark px-3 text-sm font-medium text-ink hover:bg-spark-hover md:h-9"
         >
           Nueva pregunta
         </Link>
@@ -30,7 +30,7 @@ export function AiSidebar({
               <Link
                 href={`/${slug}/ai/${c.id}`}
                 className={cn(
-                  "block truncate rounded-lg px-3 py-2 text-sm",
+                  "block truncate rounded-lg px-3 py-2.5 text-sm md:py-2",
                   c.id === activeId
                     ? "bg-raised text-paper"
                     : "text-mist hover:bg-raised/70 hover:text-paper",
@@ -42,6 +42,6 @@ export function AiSidebar({
           ))
         )}
       </ul>
-    </aside>
+    </>
   );
 }

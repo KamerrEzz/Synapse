@@ -43,12 +43,13 @@ export function NewChannelForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex gap-2">
+    <form onSubmit={onSubmit} className="flex min-w-0 gap-2">
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="nuevo-canal"
         required
+        className="min-w-0"
       />
       <Button type="submit" variant="secondary" size="sm">
         Crear

@@ -37,15 +37,15 @@ export default async function WorkspacesPage() {
   }>;
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-6 py-16">
-      <h1 className="font-display text-4xl">Tus workspaces</h1>
+    <main className="mx-auto min-h-dvh max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+      <h1 className="font-display text-3xl sm:text-4xl">Tus workspaces</h1>
       <p className="mt-2 text-mist">Elige uno o crea el primero para el equipo.</p>
       <ul className="mt-10 space-y-3">
         {workspaces.map((ws) => (
           <li key={ws.id}>
             <Link
               href={`/${ws.slug}/documents`}
-              className="flex items-center justify-between rounded-xl border border-line bg-shell px-5 py-4 hover:border-spark/50"
+              className="flex flex-col gap-2 rounded-xl border border-line bg-shell px-4 py-4 hover:border-spark/50 sm:flex-row sm:items-center sm:justify-between sm:px-5"
             >
               <div>
                 <p className="font-medium">{ws.name}</p>

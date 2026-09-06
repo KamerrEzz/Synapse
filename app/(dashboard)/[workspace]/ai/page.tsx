@@ -2,7 +2,9 @@ import { getWorkspaceBySlug } from "@/lib/auth";
 import { AiChat } from "@/components/ai/ai-chat";
 import { AiKeyGate } from "@/components/ai/ai-key-gate";
 import { AiSidebar } from "@/components/ai/ai-sidebar";
+import { SplitNav } from "@/components/layout/split-nav";
 import { getUserOpenAIMeta } from "@/lib/ai/user-key";
+import Link from "next/link";
 import type { AiConversation, AiMessage } from "@/types/database";
 
 export default async function AiPage({
@@ -23,9 +25,19 @@ export default async function AiPage({
   const conversations = (convos ?? []) as AiConversation[];
 
   return (
-    <div className="flex h-screen">
-      <AiSidebar slug={slug} conversations={conversations} activeId={null} />
-      <div className="min-w-0 flex-1">
+    <div className="h-full min-h-0">
+      <SplitNav
+        panelTitle="Conversaciones"
+        panel={<AiSidebar slug={slug} conversations={conversations} activeId={null} />}
+        trailing={
+          <Link
+            href={`/${slug}/ai`}
+            className="inline-flex h-11 items-center rounded-lg bg-spark px-3 text-sm font-medium text-ink"
+          >
+            Nueva
+          </Link>
+        }
+      >
         {keyMeta.configured ? (
           <AiChat
             workspaceId={ctx.workspace.id}
@@ -36,7 +48,7 @@ export default async function AiPage({
         ) : (
           <AiKeyGate slug={slug} />
         )}
-      </div>
+      </SplitNav>
     </div>
   );
 }

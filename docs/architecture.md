@@ -36,7 +36,7 @@ El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (
 
 Públicas para el proxy: `/`, `/login`, `/auth/*`, `/invite/*`. El resto exige sesión. Usuario autenticado en `/` o `/login` → `/workspaces`.
 
-`app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`.
+`app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`. El chrome es `WorkspaceShell`: sidebar fijo desde `lg`, barra + drawer debajo.
 
 ## Datos
 

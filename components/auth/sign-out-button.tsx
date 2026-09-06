@@ -8,7 +8,7 @@ export function SignOutButton() {
   return (
     <button
       type="button"
-      className="h-8 w-full cursor-pointer rounded-lg px-2 text-left text-xs text-mist hover:bg-raised hover:text-paper"
+      className="h-11 w-full cursor-pointer rounded-lg px-2 text-left text-xs text-mist hover:bg-raised hover:text-paper lg:h-8"
       onClick={async () => {
         const supabase = createClient();
         await supabase.auth.signOut();

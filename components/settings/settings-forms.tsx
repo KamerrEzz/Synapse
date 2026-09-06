@@ -112,7 +112,7 @@ export function InviteForm({
 
   return (
     <div className="mt-5 space-y-3">
-      <form onSubmit={invite} className="flex max-w-md gap-2">
+      <form onSubmit={invite} className="flex max-w-md flex-col gap-2 sm:flex-row">
         <Input
           type="email"
           required
@@ -120,6 +120,7 @@ export function InviteForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           aria-label="Correo para invitar"
+          className="min-w-0"
         />
         <Button type="submit" className="shrink-0">
           Invitar

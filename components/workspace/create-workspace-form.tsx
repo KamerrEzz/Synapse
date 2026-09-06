@@ -36,7 +36,7 @@ export function CreateWorkspaceForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-line bg-shell p-6">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-line bg-shell p-4 sm:p-6">
       <div>
         <h2 className="font-display text-2xl">Nuevo workspace</h2>
         <p className="mt-1 text-sm text-mist">Se crea el canal general y tú quedas como owner.</p>

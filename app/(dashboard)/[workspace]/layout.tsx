@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { getWorkspaceBySlug } from "@/lib/auth";
-import { Sidebar } from "@/components/layout/sidebar";
+import { WorkspaceShell } from "@/components/layout/workspace-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -24,14 +24,13 @@ export default async function WorkspaceLayout({
     .filter(Boolean) as { id: string; name: string; slug: string }[];
 
   return (
-    <div className="flex min-h-screen bg-ink">
-      <Sidebar
-        workspace={ctx.workspace}
-        role={ctx.role}
-        profile={ctx.profile}
-        workspaces={workspaces}
-      />
-      <div className="min-w-0 flex-1">{children}</div>
-    </div>
+    <WorkspaceShell
+      workspace={ctx.workspace}
+      role={ctx.role}
+      profile={ctx.profile}
+      workspaces={workspaces}
+    >
+      {children}
+    </WorkspaceShell>
   );
 }

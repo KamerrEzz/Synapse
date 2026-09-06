@@ -41,15 +41,15 @@ export function SearchBox({
 
   return (
     <div>
-      <form onSubmit={search} className="flex max-w-xl gap-2">
+      <form onSubmit={search} className="flex max-w-xl flex-col gap-2 sm:flex-row">
         <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar en el workspace"
           aria-label="Buscar en el workspace"
-          className="h-11"
+          className="h-11 min-w-0"
         />
-        <Button type="submit" disabled={busy} className="h-11">
+        <Button type="submit" disabled={busy} className="h-11 sm:shrink-0">
           {busy ? "Buscando…" : "Buscar"}
         </Button>
       </form>

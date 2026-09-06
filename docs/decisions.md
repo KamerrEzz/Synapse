@@ -24,6 +24,7 @@ El spec original está en [`project.md`](../project.md). Varias filas de abajo c
 | D16 | Dimensión: `vectors[0].length` tras embed OK, luego `claim_workspace_embedding_dim`. Si no hay vectores, se puede reemplazar una dim de un run fallido | Catálogo ≠ API; un workspace, un dim cuando ya hay chunks | `0007`, `lib/ai/embed.ts` |
 | D17 | No tragar errores de `hybrid_search` en RAG. Wiki se indexa al guardar/unmount, no solo con timer | `(sin resultados)` falso; documentos con texto y 0 chunks | `app/api/rag-chat`, `collaborative-editor.tsx` |
 | D18 | Editor de documentos: columna sobre `ink` (no hoja crema). Título en la página, toolbar de formato, retícula `max-w-5xl` | Encaje con el dashboard | `collaborative-editor.tsx`, `globals.css` |
+| D19 | Shell `h-dvh`; sidebar persistente desde `lg`; debajo, barra + drawer. Chat/IA: segundo panel en `md`. Padding `px-4` → `sm:px-8` | El sidebar de 248px no cabe en móvil | `workspace-shell.tsx`, `split-nav.tsx` |
 
 ## Fuera de alcance (MVP)
 

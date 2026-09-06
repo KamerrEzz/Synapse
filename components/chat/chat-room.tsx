@@ -89,8 +89,8 @@ export function ChatRoom({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
         {messages.length === 0 ? (
           <div className="flex h-full min-h-64 items-center justify-center">
             <p className="max-w-sm text-center text-sm leading-relaxed text-mist">
@@ -120,14 +120,14 @@ export function ChatRoom({
         })}
         <div ref={bottom} />
       </div>
-      <form onSubmit={send} className="border-t border-line bg-shell p-4">
+      <form onSubmit={send} className="border-t border-line bg-shell p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
         <div className="flex gap-2 rounded-xl border border-line bg-raised p-1.5">
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Escribe un mensaje"
             aria-label="Mensaje"
-            className="border-0 bg-transparent focus-visible:ring-0"
+            className="min-w-0 border-0 bg-transparent focus-visible:ring-0"
           />
           <Button type="submit" className="shrink-0">
             Enviar

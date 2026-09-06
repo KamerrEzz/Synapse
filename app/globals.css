@@ -47,6 +47,7 @@ body {
   color: var(--paper);
   color-scheme: dark;
   min-height: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -64,8 +65,14 @@ body {
 .doc-page {
   border-left: 2px solid color-mix(in srgb, var(--spark) 55%, transparent);
   max-width: 42rem;
-  padding-left: 1.25rem;
+  padding-left: 0.85rem;
   text-rendering: optimizeLegibility;
+}
+
+@media (min-width: 640px) {
+  .doc-page {
+    padding-left: 1.25rem;
+  }
 }
 
 .doc-title {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export function AiKeyGate({ slug }: { slug: string }) {
   return (
-    <div className="flex h-full min-h-[28rem] items-center justify-center px-8">
+    <div className="flex h-full min-h-[28rem] items-center justify-center px-4 sm:px-8">
       <div className="max-w-md text-center">
         <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-shell text-spark">
           <Sparkles className="h-5 w-5" />

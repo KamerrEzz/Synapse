@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { NewDocumentButton } from "@/components/documents/new-document-button";
-import { PageHeader } from "@/components/layout/page-chrome";
+import { PageHeader, pageWide } from "@/components/layout/page-chrome";
 import { EmptyState } from "@/components/layout/empty-state";
 import type { DocumentRow } from "@/types/database";
 
@@ -23,7 +23,7 @@ export default async function DocumentsPage({
   const documents = (data ?? []) as DocumentRow[];
 
   return (
-    <main className="mx-auto max-w-5xl px-8 py-8">
+    <main className={pageWide}>
       <PageHeader
         title="Documentos"
         description="La wiki del workspace. Edición simultánea con Yjs."
@@ -41,7 +41,7 @@ export default async function DocumentsPage({
             <li key={doc.id} className="border-b border-line last:border-b-0">
               <Link
                 href={`/${slug}/documents/${doc.id}`}
-                className="flex items-baseline justify-between gap-4 px-5 py-4 hover:bg-raised/50"
+                className="flex flex-col gap-1 px-4 py-4 hover:bg-raised/50 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:px-5"
               >
                 <div className="min-w-0">
                   <p className="truncate font-display text-lg tracking-tight text-paper">

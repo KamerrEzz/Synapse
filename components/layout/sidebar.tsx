@@ -30,26 +30,28 @@ export function Sidebar({
   role,
   profile,
   workspaces,
+  onNavigate,
 }: {
   workspace: Workspace;
   role: WorkspaceRole;
   profile: Profile | null;
   workspaces: Pick<Workspace, "id" | "name" | "slug">[];
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const initials = (profile?.full_name || profile?.id || "?").slice(0, 2);
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col border-r border-line bg-shell">
+    <aside className="flex h-full w-[248px] shrink-0 flex-col border-r border-line bg-shell">
       <div className="px-3 py-5">
-        <Link href="/workspaces" className="flex items-center gap-2 px-1">
+        <Link href="/workspaces" className="flex items-center gap-2 px-1" onClick={onNavigate}>
           <span className="h-2 w-2 rounded-full bg-spark" aria-hidden />
           <span className="font-display text-xl tracking-tight">Synapse</span>
         </Link>
         <label className="mt-5 block px-1">
           <span className="text-[11px] text-mist">Workspace</span>
           <select
-            className="mt-1.5 h-10 w-full cursor-pointer rounded-lg border border-line bg-raised px-2.5 text-sm text-paper"
+            className="mt-1.5 h-11 w-full cursor-pointer rounded-lg border border-line bg-raised px-2.5 text-sm text-paper lg:h-10"
             value={workspace.slug}
             onChange={(e) => {
               window.location.href = `/${e.target.value}/documents`;
@@ -72,8 +74,9 @@ export function Sidebar({
             <Link
               key={item.href}
               href={href}
+              onClick={onNavigate}
               className={cn(
-                "flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm",
+                "flex h-11 items-center gap-2.5 rounded-lg px-3 text-sm lg:h-10",
                 active
                   ? "bg-raised text-paper shadow-[inset_2px_0_0_0_var(--spark)]"
                   : "text-mist hover:bg-raised/70 hover:text-paper",
@@ -85,7 +88,7 @@ export function Sidebar({
           );
         })}
       </nav>
-      <div className="mt-auto border-t border-line px-3 py-4">
+      <div className="mt-auto border-t border-line px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <div className="flex items-center gap-3 px-1">
           <Avatar src={profile?.avatar_url} fallback={initials} />
           <div className="min-w-0 flex-1">

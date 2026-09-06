@@ -158,61 +158,66 @@ export function CollaborativeEditor({
     status === "connected" ? "En vivo" : status === "connecting" ? "Conectando…" : "Sin conexión";
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-ink">
-      <header className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line px-6 py-2">
-        <NextLink
-          href={`/${slug}/documents`}
-          className="inline-flex items-center gap-1.5 justify-self-start text-sm text-mist hover:text-paper"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Documentos
-        </NextLink>
-        <div className="min-w-0 overflow-x-auto">
-          <EditorToolbar editor={editor} />
-        </div>
-        <div className="flex items-center justify-self-end gap-3">
-          <span
-            className="inline-flex items-center gap-1.5 text-[11px] text-mist"
-            data-revision={tick}
+    <div className="flex h-full min-h-0 flex-col bg-ink">
+      <header className="shrink-0 border-b border-line">
+        <div className="flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-6 lg:py-2">
+          <NextLink
+            href={`/${slug}/documents`}
+            className="inline-flex h-11 min-w-11 items-center gap-1.5 justify-self-start text-sm text-mist hover:text-paper lg:h-auto"
           >
-            <span
-              className={cn(
-                "h-1.5 w-1.5 rounded-full",
-                status === "connected"
-                  ? "bg-ok"
-                  : status === "connecting"
-                    ? "bg-spark"
-                    : "bg-danger",
-              )}
-              aria-hidden
-            />
-            {statusLabel}
-          </span>
-          <div className="flex -space-x-2">
-            {users.map((u, i) => (
-              <span
-                key={`${u.name}-${i}`}
-                title={u.name}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-medium text-ink ring-2 ring-ink"
-                style={{ background: u.color }}
-              >
-                {u.name.slice(0, 1)}
-              </span>
-            ))}
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Documentos</span>
+          </NextLink>
+          <div className="hidden min-w-0 overflow-x-auto lg:block">
+            <EditorToolbar editor={editor} />
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => persistAndIndex(editor?.getText() ?? "", title)}
-          >
-            Guardar
-          </Button>
+          <div className="ml-auto flex items-center gap-2 justify-self-end sm:gap-3 lg:ml-0">
+            <span
+              className="inline-flex items-center gap-1.5 text-[11px] text-mist"
+              data-revision={tick}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  status === "connected"
+                    ? "bg-ok"
+                    : status === "connecting"
+                      ? "bg-spark"
+                      : "bg-danger",
+                )}
+                aria-hidden
+              />
+              <span className="hidden sm:inline">{statusLabel}</span>
+            </span>
+            <div className="hidden -space-x-2 sm:flex">
+              {users.map((u, i) => (
+                <span
+                  key={`${u.name}-${i}`}
+                  title={u.name}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-medium text-ink ring-2 ring-ink"
+                  style={{ background: u.color }}
+                >
+                  {u.name.slice(0, 1)}
+                </span>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => persistAndIndex(editor?.getText() ?? "", title)}
+            >
+              Guardar
+            </Button>
+          </div>
+        </div>
+        <div className="overflow-x-auto border-t border-line px-2 py-1 lg:hidden">
+          <EditorToolbar editor={editor} />
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto">
-        <div className="mx-auto w-full max-w-5xl px-8">
-          <article className="doc-page py-10 sm:py-12">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
+          <article className="doc-page py-8 sm:py-12">
             <label className="sr-only" htmlFor="document-title">
               Título del documento
             </label>

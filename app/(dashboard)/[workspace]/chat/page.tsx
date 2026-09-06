@@ -1,6 +1,6 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { NewChannelForm } from "@/components/chat/new-channel-form";
-import { PageHeader } from "@/components/layout/page-chrome";
+import { PageHeader, pageNarrow } from "@/components/layout/page-chrome";
 import { EmptyState } from "@/components/layout/empty-state";
 import { redirect } from "next/navigation";
 import type { Channel } from "@/types/database";
@@ -22,7 +22,7 @@ export default async function ChatIndexPage({
   if (general) redirect(`/${slug}/chat/${general.id}`);
 
   return (
-    <main className="mx-auto max-w-lg px-8 py-8">
+    <main className={pageNarrow}>
       <PageHeader title="Chat" description="Crea el primer canal del workspace." />
       <EmptyState
         title="Sin canales"

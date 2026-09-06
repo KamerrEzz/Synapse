@@ -1,6 +1,6 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { SearchBox } from "@/components/search/search-box";
-import { PageHeader } from "@/components/layout/page-chrome";
+import { PageHeader, pageNarrow } from "@/components/layout/page-chrome";
 import { getUserOpenAIMeta } from "@/lib/ai/user-key";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default async function SearchPage({
   const keyMeta = await getUserOpenAIMeta(ctx.supabase);
 
   return (
-    <main className="mx-auto max-w-3xl px-8 py-8">
+    <main className={pageNarrow}>
       <PageHeader
         title="Buscar"
         description="Full-text y semántica sobre el conocimiento del workspace."

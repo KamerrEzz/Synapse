@@ -37,7 +37,7 @@ function Tool({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded-md text-mist transition-colors hover:bg-raised hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spark/70",
+        "inline-flex h-10 w-10 touch-manipulation items-center justify-center rounded-md text-mist transition-colors hover:bg-raised hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spark/70 md:h-8 md:w-8",
         active && "bg-raised text-spark",
       )}
     >

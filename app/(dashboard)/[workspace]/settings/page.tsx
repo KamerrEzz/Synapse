@@ -1,7 +1,7 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { InviteForm, ProfileForm } from "@/components/settings/settings-forms";
 import { OpenAIKeyForm } from "@/components/settings/openai-key-form";
-import { PageHeader, Panel } from "@/components/layout/page-chrome";
+import { PageHeader, Panel, pageNarrow } from "@/components/layout/page-chrome";
 import { Badge } from "@/components/ui/badge";
 import { FREE_PLAN } from "@/lib/plans";
 import { ROLE_LABEL } from "@/lib/labels";
@@ -34,7 +34,7 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-8 py-8">
+    <main className={`${pageNarrow} space-y-6`}>
       <PageHeader
         title="Ajustes"
         description={`${ctx.workspace.name} · plan ${ctx.workspace.plan}. Tokens IA este mes: ${Number(tokenUsage ?? 0).toLocaleString("es")} / ${FREE_PLAN.aiTokensPerMonth.toLocaleString("es")}.`}
@@ -61,8 +61,8 @@ export default async function SettingsPage({
         <h2 className="font-display text-xl">Miembros</h2>
         <ul className="mt-4 divide-y divide-line overflow-hidden rounded-xl border border-line">
           {(members as WorkspaceMember[] | null)?.map((m) => (
-            <li key={m.user_id} className="flex items-center justify-between bg-raised/40 px-4 py-3">
-              <span className="text-sm">{m.profiles?.full_name || m.user_id}</span>
+            <li key={m.user_id} className="flex items-center justify-between gap-3 bg-raised/40 px-4 py-3">
+              <span className="min-w-0 truncate text-sm">{m.profiles?.full_name || m.user_id}</span>
               <Badge>{ROLE_LABEL[m.role as WorkspaceRole] ?? m.role}</Badge>
             </li>
           ))}

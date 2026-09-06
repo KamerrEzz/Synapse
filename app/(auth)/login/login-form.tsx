@@ -70,8 +70,8 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-line bg-shell p-8">
-      <h1 className="font-display text-3xl">
+    <div className="w-full max-w-md rounded-2xl border border-line bg-shell p-5 sm:p-8">
+      <h1 className="font-display text-2xl sm:text-3xl">
         {mode === "signin" ? "Entrar a Synapse" : "Crear cuenta"}
       </h1>
       <p className="mt-2 text-sm text-mist">

@@ -131,10 +131,10 @@ export function AiChat({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-5 overflow-y-auto px-6 py-8">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6 sm:py-8">
         {messages.length === 0 ? (
-          <div className="mx-auto max-w-lg rounded-2xl border border-line bg-shell px-6 py-8">
+          <div className="mx-auto max-w-lg rounded-2xl border border-line bg-shell px-4 py-6 sm:px-6 sm:py-8">
             <p className="font-display text-xl">Pregunta al workspace</p>
             <p className="mt-2 text-sm leading-relaxed text-mist">
               Responde con documentos y archivos indexados. Si no está en vuestra base, lo dirá.
@@ -174,7 +174,7 @@ export function AiChat({
         ))}
         <div ref={bottom} />
       </div>
-      <form onSubmit={send} className="border-t border-line bg-shell p-4">
+      <form onSubmit={send} className="border-t border-line bg-shell p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
         <div className="rounded-xl border border-line bg-raised p-2">
           <Textarea
             value={input}

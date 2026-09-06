@@ -29,8 +29,8 @@ export function AcceptInvite({ token, email }: { token: string; email: string })
   }
 
   return (
-    <div className="max-w-md rounded-2xl border border-line bg-shell p-8">
-      <h1 className="font-display text-3xl">Invitación</h1>
+    <div className="max-w-md rounded-2xl border border-line bg-shell p-5 sm:p-8">
+      <h1 className="font-display text-2xl sm:text-3xl">Invitación</h1>
       <p className="mt-3 text-sm text-mist">
         Esta invitación es para <strong className="text-paper">{email}</strong>. Entra con esa
         cuenta y acepta.

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Fraunces, Outfit, Source_Serif_4 } from "next/font/google";
 import { Toaster } from "sonner";
@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   title: "Synapse",
   description:
     "Knowledge base colaborativa, chat en tiempo real y RAG privado para tu equipo.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  colorScheme: "dark",
+  themeColor: "#14110e",
 };
 
 export default function RootLayout({

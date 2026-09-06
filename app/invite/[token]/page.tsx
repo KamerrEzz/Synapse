@@ -25,7 +25,7 @@ export default async function InvitePage({
 
   if (!invitation) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-6">
+      <main className="flex min-h-dvh items-center justify-center px-4 sm:px-6">
         <p className="text-mist">Invitación no encontrada.</p>
       </main>
     );
@@ -33,7 +33,7 @@ export default async function InvitePage({
 
   if (!user) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center px-6">
+      <main className="flex min-h-dvh flex-col items-center justify-center px-4 sm:px-6">
         <p className="max-w-md text-center text-mist">
           Inicia sesión con {invitation.email} para unirte a{" "}
           {invitation.workspace_name ?? "un workspace"}.
@@ -49,7 +49,7 @@ export default async function InvitePage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
+    <main className="flex min-h-dvh items-center justify-center px-4 sm:px-6">
       <AcceptInvite token={token} email={invitation.email} />
     </main>
   );

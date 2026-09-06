@@ -1,7 +1,7 @@
 import { File, FileImage, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { PageHeader } from "@/components/layout/page-chrome";
+import { PageHeader, pageWide } from "@/components/layout/page-chrome";
 import { EmptyState } from "@/components/layout/empty-state";
 import { FileUploader } from "@/components/files/file-uploader";
 import { FileRowActions } from "@/components/files/file-row-actions";
@@ -32,7 +32,7 @@ export default async function FilesPage({
   const files = (data ?? []) as FileRow[];
 
   return (
-    <main className="mx-auto max-w-5xl px-8 py-8">
+    <main className={pageWide}>
       <PageHeader
         title="Archivos"
         description="PDF, Markdown, texto e imágenes. El texto se indexa para la IA con tu clave."
@@ -49,39 +49,43 @@ export default async function FilesPage({
           {files.map((file) => (
             <li
               key={file.id}
-              className="flex items-center gap-4 border-b border-line px-4 py-3 last:border-b-0 hover:bg-raised/50"
+              className="flex flex-col gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-raised/50 sm:flex-row sm:items-center sm:gap-4"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-raised">
-                <FileIcon mime={file.mime_type} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm text-paper">{file.name}</p>
-                <p className="mt-0.5 text-xs text-mist">
-                  {file.mime_type || "archivo"} ·{" "}
-                  {formatDistanceToNow(new Date(file.created_at), {
-                    addSuffix: true,
-                    locale: es,
-                  })}
-                </p>
-                {file.mime_type?.startsWith("image/") ? (
-                  <p className="mt-1 text-xs text-mist">Las imágenes no se indexan (sin OCR).</p>
-                ) : null}
-                {file.error_message ? (
-                  <p className="mt-1 text-xs text-danger">{file.error_message}</p>
-                ) : null}
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-raised">
+                  <FileIcon mime={file.mime_type} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-paper">{file.name}</p>
+                  <p className="mt-0.5 text-xs text-mist">
+                    {file.mime_type || "archivo"} ·{" "}
+                    {formatDistanceToNow(new Date(file.created_at), {
+                      addSuffix: true,
+                      locale: es,
+                    })}
+                  </p>
+                  {file.mime_type?.startsWith("image/") ? (
+                    <p className="mt-1 text-xs text-mist">Las imágenes no se indexan (sin OCR).</p>
+                  ) : null}
+                  {file.error_message ? (
+                    <p className="mt-1 text-xs text-danger">{file.error_message}</p>
+                  ) : null}
+                </div>
               </div>
-              <Badge
-                className={
-                  file.status === "ready"
-                    ? "border-ok/50 text-ok"
-                    : file.status === "error"
-                      ? "border-danger/50 text-danger"
-                      : "border-spark/40 text-spark"
-                }
-              >
-                {FILE_STATUS_LABEL[file.status]}
-              </Badge>
-              <FileRowActions file={file} />
+              <div className="flex items-center justify-between gap-2 pl-12 sm:justify-end sm:pl-0">
+                <Badge
+                  className={
+                    file.status === "ready"
+                      ? "border-ok/50 text-ok"
+                      : file.status === "error"
+                        ? "border-danger/50 text-danger"
+                        : "border-spark/40 text-spark"
+                  }
+                >
+                  {FILE_STATUS_LABEL[file.status]}
+                </Badge>
+                <FileRowActions file={file} />
+              </div>
             </li>
           ))}
         </ul>
