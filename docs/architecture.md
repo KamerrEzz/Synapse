@@ -6,14 +6,14 @@ Synapse es una app Next.js 16 (App Router) con backend en Supabase: Auth, Postgr
 
 | Capa | Dónde | Rol |
 |------|--------|-----|
-| UI | `app/`, `components/` | Rutas App Router, UI en español |
-| Proxy | `proxy.ts` → `lib/supabase/proxy.ts` | Refresco de sesión y redirects |
-| Clientes Supabase | `lib/supabase/client.ts`, `server.ts` | Anon key + cookies (`@supabase/ssr`) |
-| APIs Next | `app/api/*` | JWT + membresía; OpenAI en el servidor |
+| UI | `src/app/`, `src/components/` | Rutas App Router, UI en español |
+| Proxy | `src/proxy.ts` → `src/lib/supabase/proxy.ts` | Refresco de sesión y redirects |
+| Clientes Supabase | `src/lib/supabase/client.ts`, `server.ts` | Anon key + cookies (`@supabase/ssr`) |
+| APIs Next | `src/app/api/*` | JWT + membresía; OpenAI en el servidor |
 | Postgres | `supabase/migrations/` | Tablas, RLS, RPCs |
 | Edge Functions | `supabase/functions/` | Mismo contrato que `/api/*` para deploy remoto |
-| Collab | `lib/collab/y-supabase-provider.ts` | Yjs por Broadcast privado |
-| RAG | `lib/ai/*`, `hybrid_search` | Chunks, embeddings, RRF |
+| Collab | `src/lib/collab/y-supabase-provider.ts` | Yjs por Broadcast privado |
+| RAG | `src/lib/ai/*`, `hybrid_search` | Chunks, embeddings, RRF |
 
 El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (`unpdf` no corre igual en Deno).
 
@@ -36,7 +36,7 @@ El navegador no llama a Edge Functions. En local, PDF/texto y RAG van por Next (
 
 Públicas para el proxy: `/`, `/login`, `/auth/*`, `/invite/*`. El resto exige sesión. Usuario autenticado en `/` o `/login` → `/workspaces`.
 
-`app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`. El chrome es `WorkspaceShell`: sidebar fijo desde `lg`, barra + drawer debajo.
+`src/app/(dashboard)/[workspace]/layout.tsx` es `force-dynamic` y resuelve el slug con `getWorkspaceBySlug`. El chrome es `WorkspaceShell`: sidebar fijo desde `lg`, barra + drawer debajo.
 
 ## Datos
 
@@ -56,7 +56,9 @@ Tenant = `workspaces` + `workspace_members` (roles `owner` | `admin` | `member`)
 
 RPCs relevantes: `create_workspace`, `accept_invitation`, `get_invitation_preview`, `get_document_state`, `persist_document_state`, `hybrid_search`, `workspace_monthly_ai_tokens`, `is_workspace_member`, `has_workspace_role`, `realtime_topic_allowed`, `save_own_ai_credential`, `own_openai_key_meta`, `own_openai_key_cipher`, `delete_own_openai_key`, `claim_workspace_embedding_dim`.
 
-Límites Free: `lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
+Límites Free: `src/lib/plans.ts` (100k tokens/mes, 25 archivos, 10 miembros, 50 documentos).
+
+Código de aplicación en `src/` (`app`, `components`, `lib`, `types`, `proxy.ts`). `public/`, `supabase/`, `docs/` y config quedan en la raíz.
 
 ## RLS
 
