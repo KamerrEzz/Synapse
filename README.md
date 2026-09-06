@@ -46,7 +46,7 @@ npx supabase functions deploy generate-title
 - Chat por canales (`postgres_changes`)
 - Archivos → chunks + embeddings
 - Chat IA grounded (búsqueda híbrida FTS + pgvector) con citas; cada usuario pone su API key de OpenAI en Ajustes
-- MCP Streamable HTTP en `/api/mcp` para agentes (tokens en Ajustes)
+- MCP Streamable HTTP en `/api/mcp` para agentes (lectura + CRUD de wiki; tokens en Ajustes)
 - Invitaciones por enlace, búsqueda, límites del plan Free
 - Tests de aislamiento documentados en [`supabase/tests/rls.sql`](supabase/tests/rls.sql)
 

@@ -10,7 +10,7 @@ const mcpHandler = createMcpHandler(
   {
     serverInfo: { name: "synapse", version: "0.1.0" },
     instructions:
-      "Synapse is a private workspace wiki, files, chat, and RAG. Call list_workspaces first. Use search or ask for grounded answers. Never invent facts that are not in retrieved chunks.",
+      "Synapse is a private workspace wiki, files, chat, and RAG. Call list_workspaces first. Wiki CRUD: create_document, get_document, update_document, delete_document. Use search or ask for grounded answers. Never invent facts that are not in retrieved chunks.",
   },
 );
 

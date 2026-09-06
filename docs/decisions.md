@@ -26,7 +26,7 @@ El spec original está en [`project.md`](../project.md). Varias filas de abajo c
 | D18 | Editor de documentos: columna sobre `ink` (no hoja crema). Título en la página, toolbar de formato, retícula `max-w-5xl` | Encaje con el dashboard | `collaborative-editor.tsx`, `globals.css` |
 | D19 | Shell `h-dvh`; sidebar persistente desde `lg`; debajo, barra + drawer. Chat/IA: segundo panel en `md`. Padding `px-4` → `sm:px-8` | El sidebar de 248px no cabe en móvil | `workspace-shell.tsx`, `split-nav.tsx` |
 | D20 | App Router bajo `src/` (`src/app`, `src/components`, `src/lib`, `src/types`, `src/proxy.ts`). Alias `@/*` → `./src/*` | Separar código de producto de `docs/`, `supabase/`, `e2e/` y config | `tsconfig.json`, `components.json` |
-| D21 | MCP Streamable HTTP en `/api/mcp`. Auth = token personal `syn_mcp_…` (hash SHA-256). Tools en inglés. `mcp_hybrid_search(p_user_id)` solo `service_role`. Sin OAuth | Los agentes no tienen cookie de sesión; `hybrid_search` exige `auth.uid()` | `src/mcp/*`, `0010_mcp_tokens.sql`. Detalle: [`mcp.md`](./mcp.md) |
+| D21 | MCP Streamable HTTP en `/api/mcp`. Auth = token personal `syn_mcp_…` (hash SHA-256). Tools en inglés (lectura + CRUD wiki). Escritura de wiki: `plain_text` + `yjs_state` hex (el editor no lee el texto plano). `mcp_hybrid_search(p_user_id)` solo `service_role`. Sin OAuth | Los agentes no tienen cookie de sesión; `hybrid_search` exige `auth.uid()`; persistir solo `plain_text` lo pisa el editor | `src/mcp/*`, `0010_mcp_tokens.sql`. Detalle: [`mcp.md`](./mcp.md) |
 
 ## Fuera de alcance (MVP)
 

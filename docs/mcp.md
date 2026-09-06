@@ -1,6 +1,6 @@
 # MCP
 
-Endpoint Streamable HTTP para que un agente (Cursor, Claude, OpenCode, etc.) lea el workspace: documentos, archivos, búsqueda híbrida, RAG y chat. Auth = token personal Bearer, no OAuth.
+Endpoint Streamable HTTP para que un agente (Cursor, Claude, OpenCode, etc.) lea el workspace y haga CRUD de la wiki: documentos, archivos, búsqueda híbrida, RAG y chat. Auth = token personal Bearer, no OAuth.
 
 ## Conectar
 
@@ -68,6 +68,9 @@ Nombres y descripciones en inglés (contratos para agentes). La UI de Synapse si
 | `list_workspaces` | Workspaces que cubre el token (id, slug, rol) |
 | `list_documents` | Wiki del workspace (id o slug) |
 | `get_document` | Título + `plain_text` por id |
+| `create_document` | Alta wiki (`workspace`, `title` opcional, `content` opcional). Título por defecto `Sin título` (máx. 200). Techo Free: 50 |
+| `update_document` | Cambia `title` y/o `content` por id. Hay que pasar al menos uno |
+| `delete_document` | Borra el documento y sus chunks. No toca archivos subidos |
 | `list_files` | Archivos indexados |
 | `search` | `mcp_hybrid_search` (FTS + semántica, umbral 0.42) |
 | `ask` | RAG no streaming + citas. Cuenta tokens del plan Free |
@@ -76,7 +79,9 @@ Nombres y descripciones en inglés (contratos para agentes). La UI de Synapse si
 
 Prompt `answer_from_workspace`: indica al agente que use `search` / `ask` y no invente fuera del índice.
 
-`search` y `ask` usan la clave de IA del **dueño del token** (BYOK). Sin clave: error en el tool result.
+Cualquier miembro del workspace puede crear, editar y borrar (igual que la UI). `create_document` / `update_document` escriben `plain_text` **y** `yjs_state` (el editor carga Yjs, no el texto plano). Si hay contenido, reindexan para `search`/`ask`. Sin clave de IA el documento se guarda igual y el resultado trae `index_error`. Si alguien tiene el editor abierto, gana el último persist (igual que dos personas).
+
+`search`, `ask` y el reindex de documentos usan la clave de IA del **dueño del token** (BYOK). Sin clave: error en el tool result de búsqueda/pregunta; en CRUD, `index_error`.
 
 ## Auth
 
@@ -92,6 +97,8 @@ Prompt `answer_from_workspace`: indica al agente que use `search` / `ask` y no i
 ```
 src/mcp/auth.ts      mint / hash / sesión
 src/mcp/tools.ts     registerTool + prompt
+src/mcp/documents.ts CRUD wiki + reindex
+src/lib/collab/yjs-from-plain.ts  semilla Yjs desde texto plano
 src/mcp/server.ts    HTTP handler + Bearer (sin desafío OAuth)
 src/mcp/snippets.ts  JSON/comando Cursor y OpenCode
 src/app/api/mcp/route.ts

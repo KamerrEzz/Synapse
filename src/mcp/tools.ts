@@ -14,6 +14,11 @@ import {
   resolveWorkspaceRef,
   type McpSession,
 } from "@/mcp/auth";
+import {
+  mcpCreateDocument,
+  mcpDeleteDocument,
+  mcpUpdateDocument,
+} from "@/mcp/documents";
 
 function json(data: unknown) {
   return {
@@ -159,6 +164,73 @@ export function registerSynapseTools(server: McpServer) {
         if (!data) throw new Error("Documento no encontrado");
         await assertWorkspaceAccess(session, data.workspace_id as string);
         return json(data);
+      } catch (e) {
+        return err(e instanceof Error ? e.message : "Error");
+      }
+    },
+  );
+
+  server.registerTool(
+    "create_document",
+    {
+      title: "Create document",
+      description:
+        "Create a wiki document. Seeds the collaborative editor (Yjs) from content so the UI matches. Indexes for search/ask when content is non-empty. Title defaults to Sin título; Free plan caps at 50 docs.",
+      inputSchema: z.object({
+        workspace: z.string().describe("Workspace id or slug"),
+        title: z.string().max(200).optional().describe("Document title"),
+        content: z.string().optional().describe("Plain-text body"),
+      }),
+    },
+    async ({ workspace, title, content }, ctx) => {
+      try {
+        const session = sessionOf(ctx.http?.authInfo);
+        const result = await mcpCreateDocument(session, workspace, title, content, aiCredFor);
+        return json(result);
+      } catch (e) {
+        return err(e instanceof Error ? e.message : "Error");
+      }
+    },
+  );
+
+  server.registerTool(
+    "update_document",
+    {
+      title: "Update document",
+      description:
+        "Update a wiki document title and/or content by id. Pass at least one of title or content. Content overwrites the body and Yjs state, then reindexes. Title-only updates metadata in the search index.",
+      inputSchema: z.object({
+        document_id: z.string().uuid(),
+        title: z.string().max(200).optional(),
+        content: z.string().optional().describe("New plain-text body; omit to leave body unchanged"),
+      }),
+    },
+    async ({ document_id, title, content }, ctx) => {
+      try {
+        const session = sessionOf(ctx.http?.authInfo);
+        const result = await mcpUpdateDocument(session, document_id, title, content, aiCredFor);
+        return json(result);
+      } catch (e) {
+        return err(e instanceof Error ? e.message : "Error");
+      }
+    },
+  );
+
+  server.registerTool(
+    "delete_document",
+    {
+      title: "Delete document",
+      description:
+        "Permanently delete a wiki document and its search chunks. Does not delete uploaded files.",
+      inputSchema: z.object({
+        document_id: z.string().uuid(),
+      }),
+    },
+    async ({ document_id }, ctx) => {
+      try {
+        const session = sessionOf(ctx.http?.authInfo);
+        const result = await mcpDeleteDocument(session, document_id);
+        return json(result);
       } catch (e) {
         return err(e instanceof Error ? e.message : "Error");
       }

@@ -75,7 +75,7 @@ Protocolo manual de aislamiento: `supabase/tests/rls.sql`.
 
 ## Collab (documentos)
 
-Tiptap + Yjs. Sync: canal privado `doc:{documentId}` (Broadcast: `yjs-update`, `awareness`, `sync-request`). Persistencia: `persist_document_state` (estado Yjs en base64 → bytea) con debounce ~1.8s. Carga: `get_document_state`.
+Tiptap + Yjs. Sync: canal privado `doc:{documentId}` (Broadcast: `yjs-update`, `awareness`, `sync-request`). Persistencia: `persist_document_state` (estado Yjs en base64 → bytea) con debounce ~1.8s. Carga: `get_document_state`. MCP (`create_document` / `update_document`) escribe `yjs_state` en hex `\x…` vía admin porque `persist_document_state` usa `auth.uid()`.
 
 Autorización Realtime: policies en `realtime.messages` + `realtime_topic_allowed()` (topics `doc:`, `chat:`, `workspace:`).
 

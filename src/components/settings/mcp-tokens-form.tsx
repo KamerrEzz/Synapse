@@ -103,7 +103,8 @@ export function McpTokensForm({ workspaceId }: { workspaceId: string }) {
         Token personal en la cabecera <span className="text-paper">Authorization</span>. No hay
         OAuth: en OpenCode no uses <span className="text-paper">mcp auth</span>, pon{" "}
         <span className="text-paper">oauth: false</span>. El secreto se muestra una vez. El
-        agente usa tu clave de IA para buscar y preguntar.
+        agente usa tu clave de IA para buscar y preguntar, y puede crear, editar y
+        borrar documentos de la wiki.
       </p>
 
       <form onSubmit={(e) => void create(e)} className="space-y-4">
