@@ -13,7 +13,7 @@ El spec original está en [`project.md`](../project.md). Varias filas de abajo c
 | D5 | Next.js 16: `proxy.ts`, no `middleware.ts`. `params` como `Promise<{…}>` | Convención actual de Next 16 | `proxy.ts`, páginas del dashboard |
 | D6 | RLS helpers `SECURITY DEFINER` (`is_workspace_member`, `has_workspace_role`) | Evitar recursión de policies | `0001_init.sql` |
 | D7 | Un solo `knowledge_chunks` (`source_type` file \| document) | Un índice híbrido, no `file_chunks` aparte | `0001`, `/api/process-file`, `/api/index-document` |
-| D8 | Hybrid search = RRF (coseno + `plainto_tsquery('spanish', …)`). `p_embedding` como literal `[…]`. `score::float8` | FTS + semántica; PostgREST + plpgsql | `0003`, `0006`, `0008`, `lib/ai/search.ts` |
+| D8 | Hybrid search = RRF (coseno + `plainto_tsquery('spanish', …)`). `p_embedding` como literal `[…]`. `score::float8`. Semántica solo si `<=>` < 0.42 | FTS + semántica; sin umbral el k-NN rellena con documentos irrelevantes en corpus pequeño | `0003`, `0006`, `0008`, `0009`, `lib/ai/search.ts` |
 | D9 | Invitees no hacen SELECT de invitaciones (RLS admin). Preview = `get_invitation_preview(p_token)` | La página `/invite/[token]` funciona sin membresía | `0002`, `app/invite/[token]/page.tsx` |
 | D10 | Browser → `/api/*`. `supabase/functions/` = deploy remoto. PDF se procesa en Next (`unpdf`) | Deno no replica el pipeline PDF local | `app/api/*`, `supabase/functions/process-file` |
 | D11 | Storage: `workspace-files` privado, `avatars` público | Archivos del tenant vs foto de perfil | `0001` storage policies |

@@ -102,7 +102,9 @@ HNSW fijo a 1536 se **tiró** en `0006`. Search = coseno exacto + FTS (OK a esca
 
 Firma: `(p_workspace_id uuid, p_query text, p_embedding vector, p_match_count int)`.
 
-RRF: top 20 semántico (`<=>`) ∪ top 20 FTS (`plainto_tsquery('spanish', …)`).
+RRF: top 20 semántico (`<=>` **y** distancia coseno `< 0.42`) ∪ top 20 FTS (`plainto_tsquery('spanish', …)`).
+
+Sin el umbral, un workspace con pocos chunks siempre rellena resultados semánticos (p.ej. buscar `uziel` devolvía el FAQ de Forge). El FTS sigue saliendo aunque el vecino esté lejos: un nombre propio en el CV no necesita parecerse al embedding de la query.
 
 Al llamar desde JS:
 
@@ -125,6 +127,7 @@ En plpgsql, no reutilizar nombres de columnas OUT (`id`, `content`, …) en los 
 | `El modelo de embeddings devolvió 1024 dimensiones, no 4096` | Se exigía la dim del catálogo (ficha NaN = 4096) **antes** de embed. El run fallido dejaba `embedding_dim = 4096` y 0 chunks | Dim = longitud real; `0007` permite reset si no hay vectores |
 | IA: `(sin resultados)` con PDF Listo | Chunks de verdad (p.ej. CV) + RPC roto o ignorado; wiki no indexada al guardar; imágenes Listo sin texto; archivos en Error sin reintento | Vector literal; no tragar error; index al guardar; **Reintentar**; no OCR |
 | IA: `structure of query does not match function result type` | `score` numeric vs float8. Solo se veía cuando **sí** había hits | `0008` + cast |
+| Buscar un nombre propio trae PDFs sin esa palabra | k-NN top 20 sin umbral de distancia; corpus pequeño siempre rellena | `0009` (`<=>` < 0.42); FTS intacto |
 | Archivos Error eternos tras el fix de dim | El mensaje viejo está en `files.error_message`; no se reprocessan solos | `POST /api/process-file` otra vez |
 | Wiki con texto y 0 chunks | Index solo a 30s; unmount/Guardar no indexaban | Index en persist + debounce 8s |
 | PDF Listo y vacío | Extract vacío se marcaba `ready` | PDF vacío → `error` + mensaje OCR |
@@ -140,7 +143,7 @@ Checklist mínimo:
 - [ ] Env wrap con nombre genérico; salt scrypt **propio**.
 - [ ] `knowledge_chunks` único; `vector` unbounded; dim por tenant **después** del embed.
 - [ ] `claim_*_embedding_dim` con reset si el corpus está vacío.
-- [ ] RPC search: RRF; `p_embedding` como string `[…]`; `score::float8`; CTE sin nombres OUT.
+- [ ] RPC search: RRF; `p_embedding` como string `[…]`; `score::float8`; CTE sin nombres OUT; umbral de distancia en k-NN (si no, corpus pequeño rellena basura).
 - [ ] Superficie el error del RPC; no rellenar contexto con vacío en silencio.
 - [ ] Indexar wiki al persistir, no solo con un timer largo.
 - [ ] Imágenes / PDF escaneado: no fingir que están en el índice.
@@ -148,7 +151,7 @@ Checklist mínimo:
 - [ ] Prompt: solo contexto; idioma de la pregunta; citas.
 - [ ] Edge Functions opcionales; el path del browser es `/api/*`.
 
-Archivos a mirar en este repo: `lib/ai/*`, `lib/crypto/secret.ts`, `app/api/{openai-key,process-file,index-document,rag-chat,search}/`, `supabase/migrations/0005`–`0008`, `components/settings/openai-key-form.tsx`, `components/ai/ai-key-gate.tsx`.
+Archivos a mirar en este repo: `lib/ai/*`, `lib/crypto/secret.ts`, `app/api/{openai-key,process-file,index-document,rag-chat,search}/`, `supabase/migrations/0005`–`0009`, `components/settings/openai-key-form.tsx`, `components/ai/ai-key-gate.tsx`.
 
 ## Next step
 

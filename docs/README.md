@@ -15,7 +15,7 @@ El spec de producto (visión, fases, métricas) está en [`project.md`](../proje
 ## Arranque
 
 1. Copiar [`.env.example`](../.env.example) a `.env.local`.
-2. Aplicar migraciones en el proyecto Supabase (`0001`–`0008`).
+2. Aplicar migraciones en el proyecto Supabase (`0001`–`0009`).
 3. `npm install` y `npm run dev` (Next 16 usa `proxy.ts`, no `middleware.ts`).
 4. `npm run test:e2e` para Playwright.
 

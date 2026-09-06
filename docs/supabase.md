@@ -24,6 +24,7 @@ Aplicar en orden. No reescribir `0001` en producción; añadir archivos nuevos.
 | `0006_ai_providers.sql` | Proveedor/URL/modelos, `workspaces.embedding_dim`, `hybrid_search` con `vector` sin tamaño fijo, `claim_workspace_embedding_dim` |
 | `0007_claim_embedding_dim_if_empty.sql` | Si no hay vectores, se puede cambiar la dimensión (p.ej. tras un indexado fallido) |
 | `0008_hybrid_search_return_types.sql` | `hybrid_search`: CTE `hit_*`, `score::double precision` (si no, `structure of query does not match function result type`) |
+| `0009_hybrid_search_distance_gate.sql` | `hybrid_search`: k-NN semántico solo si distancia coseno `< 0.42`. FTS no usa ese umbral |
 
 ### `0004` y `realtime.messages`
 
