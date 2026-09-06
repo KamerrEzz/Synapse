@@ -60,9 +60,15 @@ export async function POST(request: Request) {
       .eq("source_id", file.id);
 
     if (!text.trim()) {
+      const image = (file.mime_type ?? "").startsWith("image/");
       await ctx.supabase
         .from("files")
-        .update({ status: "ready", error_message: null })
+        .update({
+          status: image ? "ready" : "error",
+          error_message: image
+            ? null
+            : "No se pudo extraer texto. Si es un PDF escaneado, hace falta OCR.",
+        })
         .eq("id", file.id);
       return NextResponse.json({ ok: true, chunks: 0 });
     }

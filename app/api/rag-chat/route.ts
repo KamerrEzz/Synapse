@@ -1,5 +1,6 @@
 import { compatibleClient } from "@/lib/ai/provider";
 import { embedForWorkspace } from "@/lib/ai/embed";
+import { hybridSearch } from "@/lib/ai/search";
 import {
   getUserAiCred,
   jsonMissingKey,
@@ -48,14 +49,21 @@ export async function POST(request: Request) {
   }
 
   const [embedding] = await embedForWorkspace(ctx.supabase, body.workspaceId, [body.question], cred);
-  const { data: hits } = await ctx.supabase.rpc("hybrid_search", {
-    p_workspace_id: body.workspaceId,
-    p_query: body.question,
-    p_embedding: embedding,
-    p_match_count: 8,
-  });
-
-  const retrieved = (hits ?? []) as SearchHit[];
+  let retrieved: SearchHit[] = [];
+  try {
+    retrieved = await hybridSearch(
+      ctx.supabase,
+      body.workspaceId,
+      body.question,
+      embedding,
+      8,
+    );
+  } catch (err) {
+    return Response.json(
+      { error: err instanceof Error ? err.message : "No se pudo buscar en el índice" },
+      { status: 500 },
+    );
+  }
   const context = retrieved
     .map(
       (h, i) =>

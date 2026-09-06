@@ -11,6 +11,27 @@ export function FileRowActions({ file }: { file: FileRow }) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
 
+  async function retry() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/process-file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId: file.id, workspaceId: file.workspace_id }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body.error || "No se pudo reindexar");
+      }
+      toast.success("Archivo indexado");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo reindexar");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function download() {
     setBusy(true);
     try {
@@ -55,6 +76,11 @@ export function FileRowActions({ file }: { file: FileRow }) {
 
   return (
     <div className="flex shrink-0 gap-1">
+      {file.status === "error" ? (
+        <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => void retry()}>
+          Reintentar
+        </Button>
+      ) : null}
       <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={() => void download()}>
         Abrir
       </Button>

@@ -63,6 +63,9 @@ export default async function FilesPage({
                     locale: es,
                   })}
                 </p>
+                {file.mime_type?.startsWith("image/") ? (
+                  <p className="mt-1 text-xs text-mist">Las imágenes no se indexan (sin OCR).</p>
+                ) : null}
                 {file.error_message ? (
                   <p className="mt-1 text-xs text-danger">{file.error_message}</p>
                 ) : null}

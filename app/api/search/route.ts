@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { embedForWorkspace } from "@/lib/ai/embed";
+import { hybridSearch } from "@/lib/ai/search";
 import {
   getUserAiCred,
   jsonMissingKey,
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
 import { requireMember } from "@/lib/server/workspace";
-import type { SearchHit } from "@/types/database";
 
 export async function POST(request: Request) {
   const body = (await request.json()) as { workspaceId?: string; query?: string };
@@ -30,14 +30,13 @@ export async function POST(request: Request) {
   }
 
   const [embedding] = await embedForWorkspace(ctx.supabase, body.workspaceId, [body.query], cred);
-  const { data, error } = await ctx.supabase.rpc("hybrid_search", {
-    p_workspace_id: body.workspaceId,
-    p_query: body.query,
-    p_embedding: embedding,
-    p_match_count: 12,
-  });
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const hits = await hybridSearch(ctx.supabase, body.workspaceId, body.query, embedding, 12);
+    return NextResponse.json({ hits });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "No se pudo buscar" },
+      { status: 500 },
+    );
   }
-  return NextResponse.json({ hits: (data ?? []) as SearchHit[] });
 }
