@@ -7,6 +7,7 @@ import { compatibleClient } from "@/lib/ai/provider";
 import { decryptSecret } from "@/lib/crypto/secret";
 import { AI_PRESETS, isAiProviderId } from "@/lib/ai/catalog";
 import { FREE_PLAN } from "@/lib/plans";
+import { blendedChatMeta, chatMeta, embedMeta, recordUsage } from "@/lib/stats/record";
 import type { AiCred } from "@/lib/ai/user-key";
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import {
@@ -19,6 +20,7 @@ import {
   mcpDeleteDocument,
   mcpUpdateDocument,
 } from "@/mcp/documents";
+import { registerStatsTools } from "@/mcp/stats";
 
 function json(data: unknown) {
   return {
@@ -282,15 +284,29 @@ export function registerSynapseTools(server: McpServer) {
         const session = sessionOf(ctx.http?.authInfo);
         const ws = await resolveWorkspaceRef(session, workspace);
         const cred = await aiCredFor(session.userId);
-        const [embedding] = await embedTexts([query], cred);
+        const { vectors, tokens: embedTokens } = await embedTexts([query], cred);
+        const [embedding] = vectors;
+        const admin = createAdminClient();
         const hits = await hybridSearchAsUser(
-          createAdminClient(),
+          admin,
           session.userId,
           ws.id,
           query,
           embedding,
           limit ?? 8,
         );
+        await recordUsage(admin, {
+          workspaceId: ws.id,
+          userId: session.userId,
+          kind: "embedding_tokens",
+          quantity: embedTokens,
+          meta: embedMeta({
+            source: "embed_search",
+            provider: cred.provider,
+            model: cred.embeddingModel,
+            tokens: embedTokens,
+          }),
+        });
         return json({
           workspace: ws.slug,
           hits: hits.map((h) => ({
@@ -327,7 +343,8 @@ export function registerSynapseTools(server: McpServer) {
           throw new Error("Límite de tokens del plan Free este mes.");
         }
         const cred = await aiCredFor(session.userId);
-        const [embedding] = await embedTexts([question], cred);
+        const { vectors, tokens: embedTokens } = await embedTexts([question], cred);
+        const [embedding] = vectors;
         const admin = createAdminClient();
         const hits = await hybridSearchAsUser(admin, session.userId, ws.id, question, embedding, 8);
         const context = hits
@@ -353,12 +370,43 @@ export function registerSynapseTools(server: McpServer) {
           ],
         });
         const answer = completion.choices[0]?.message?.content ?? "";
-        const approxTokens = Math.ceil((question.length + answer.length + context.length) / 4);
-        await admin.from("usage_events").insert({
-          workspace_id: ws.id,
-          user_id: session.userId,
+        const promptTokens = Number(completion.usage?.prompt_tokens ?? 0);
+        const completionTokens = Number(completion.usage?.completion_tokens ?? 0);
+        const chatTokens =
+          promptTokens + completionTokens ||
+          Math.ceil((question.length + answer.length + context.length) / 4);
+        await recordUsage(admin, {
+          workspaceId: ws.id,
+          userId: session.userId,
+          kind: "embedding_tokens",
+          quantity: embedTokens,
+          meta: embedMeta({
+            source: "mcp_ask",
+            provider: cred.provider,
+            model: cred.embeddingModel,
+            tokens: embedTokens,
+          }),
+        });
+        await recordUsage(admin, {
+          workspaceId: ws.id,
+          userId: session.userId,
           kind: "ai_tokens",
-          quantity: approxTokens,
+          quantity: chatTokens,
+          meta:
+            promptTokens || completionTokens
+              ? chatMeta({
+                  source: "mcp_ask",
+                  provider: cred.provider,
+                  model: cred.chatModel,
+                  promptTokens,
+                  completionTokens,
+                })
+              : blendedChatMeta({
+                  source: "mcp_ask",
+                  provider: cred.provider,
+                  model: cred.chatModel,
+                  tokens: chatTokens,
+                }),
         });
         return json({
           answer,
@@ -464,4 +512,6 @@ export function registerSynapseTools(server: McpServer) {
       ],
     }),
   );
+
+  registerStatsTools(server);
 }

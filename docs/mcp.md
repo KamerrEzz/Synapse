@@ -1,6 +1,6 @@
 # MCP
 
-Endpoint Streamable HTTP para que un agente (Cursor, Claude, OpenCode, etc.) lea el workspace y haga CRUD de la wiki: documentos, archivos, búsqueda híbrida, RAG y chat. Auth = token personal Bearer, no OAuth.
+Endpoint Streamable HTTP para que un agente (Cursor, Claude, OpenCode, etc.) lea el workspace, haga CRUD de la wiki y pida estadísticas: documentos, archivos, búsqueda híbrida, RAG, chat y analítica. Auth = token personal Bearer, no OAuth.
 
 ## Conectar
 
@@ -76,6 +76,8 @@ Nombres y descripciones en inglés (contratos para agentes). La UI de Synapse si
 | `ask` | RAG no streaming + citas. Cuenta tokens del plan Free |
 | `list_channels` | Canales de chat |
 | `list_recent_messages` | Últimos mensajes de un canal (solo lectura) |
+| `get_workspace_stats` | Snapshot de Estadísticas (cobertura RAG, techos, tokens/USD). `days` 7/30/90; `detail` summary \| full |
+| `export_workspace_stats_csv` | Mismo snapshot en CSV (`resumen`, `ia`, `actividad`, `archivos`, `documentos`, `indice`) |
 
 Prompt `answer_from_workspace`: indica al agente que use `search` / `ask` y no invente fuera del índice.
 
@@ -97,6 +99,7 @@ Cualquier miembro del workspace puede crear, editar y borrar (igual que la UI). 
 ```
 src/mcp/auth.ts      mint / hash / sesión
 src/mcp/tools.ts     registerTool + prompt
+src/mcp/stats.ts     get_workspace_stats / export_workspace_stats_csv
 src/mcp/documents.ts CRUD wiki + reindex
 src/lib/collab/yjs-from-plain.ts  semilla Yjs desde texto plano
 src/mcp/server.ts    HTTP handler + Bearer (sin desafío OAuth)
