@@ -89,6 +89,30 @@ export async function PUT(request: Request) {
 export async function DELETE() {
   const ctx = await requireSession();
   if (!ctx) return Response.json({ error: "No autenticado" }, { status: 401 });
+  const { data: owned } = await ctx.supabase
+    .from("workspace_members")
+    .select("workspace_id, role, workspaces(name, ai_key_mode)")
+    .eq("user_id", ctx.user.id)
+    .eq("role", "owner");
+  const blocking = (owned ?? []).filter((row) => {
+    const ws = row.workspaces as unknown as { name?: string; ai_key_mode?: string } | null;
+    return ws?.ai_key_mode === "shared";
+  });
+  if (blocking.length) {
+    const label = blocking
+      .map((row) => {
+        const ws = row.workspaces as unknown as { name?: string } | null;
+        return ws?.name;
+      })
+      .filter(Boolean)
+      .join(", ");
+    return Response.json(
+      {
+        error: `Pasa ${label || "el workspace"} a “cada quien la suya” antes de quitar la clave compartida.`,
+      },
+      { status: 409 },
+    );
+  }
   const { error } = await ctx.supabase.rpc("delete_own_openai_key");
   if (error) return Response.json({ error: error.message }, { status: 400 });
   return Response.json({ configured: false });

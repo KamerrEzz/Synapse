@@ -1,8 +1,8 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { SearchBox } from "@/components/search/search-box";
 import { PageHeader, pageNarrow } from "@/components/layout/page-chrome";
-import { getUserOpenAIMeta } from "@/lib/ai/user-key";
-import Link from "next/link";
+import { getWorkspaceAiAccess } from "@/lib/ai/user-key";
+import { WorkspaceAiBanner } from "@/components/ai/workspace-ai-banner";
 
 export default async function SearchPage({
   params,
@@ -11,7 +11,7 @@ export default async function SearchPage({
 }) {
   const { workspace: slug } = await params;
   const ctx = await getWorkspaceBySlug(slug);
-  const keyMeta = await getUserOpenAIMeta(ctx.supabase);
+  const access = await getWorkspaceAiAccess(ctx.supabase, ctx.workspace);
 
   return (
     <main className={pageNarrow}>
@@ -19,15 +19,11 @@ export default async function SearchPage({
         title="Buscar"
         description="Full-text y semántica sobre el conocimiento del workspace."
       />
-      {!keyMeta.configured ? (
-        <p className="mt-8 rounded-xl border border-line bg-shell px-4 py-3 text-sm text-mist">
-          La búsqueda semántica usa tu clave de IA.{" "}
-          <Link href={`/${slug}/settings`} className="text-spark hover:underline">
-            Añádela en Ajustes
-          </Link>
-          .
-        </p>
-      ) : null}
+      <WorkspaceAiBanner
+        slug={slug}
+        access={access}
+        personalCopy="La búsqueda semántica usa tu clave de IA."
+      />
       <div className="mt-8">
         <SearchBox workspaceId={ctx.workspace.id} slug={slug} />
       </div>

@@ -104,8 +104,9 @@ export function OpenAIKeyForm() {
   return (
     <form onSubmit={save} className="space-y-4">
       <p className="text-sm leading-relaxed text-mist">
-        Cada persona trae su propia clave. Se cifra en el servidor y no vuelve a mostrarse.
-        Vale cualquier API con el contrato de OpenAI: OpenAI, NaN, Helmcode, un servidor propio…
+        Cada persona guarda la suya, cifrada en el servidor: no vuelve a mostrarse.
+        Si arriba eliges compartir, el equipo usa esta clave sin verla. Vale cualquier
+        API con el contrato de OpenAI: OpenAI, NaN, Helmcode, un servidor propio…
       </p>
       {meta?.configured ? (
         <p className="rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-sm text-paper">

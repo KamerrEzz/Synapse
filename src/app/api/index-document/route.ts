@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { chunkText } from "@/lib/ai/chunk";
 import { embedForWorkspace } from "@/lib/ai/embed";
 import {
-  getUserAiCred,
+  getWorkspaceAiCred,
   jsonMissingKey,
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
@@ -44,9 +44,9 @@ export async function POST(request: Request) {
 
   let cred;
   try {
-    cred = await getUserAiCred(ctx.supabase);
+    cred = await getWorkspaceAiCred(ctx.supabase, body.workspaceId);
   } catch (err) {
-    if (err instanceof MissingAiKeyError) return jsonMissingKey();
+    if (err instanceof MissingAiKeyError) return jsonMissingKey(err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "No se pudo usar la clave" },
       { status: 400 },

@@ -18,7 +18,7 @@ La UI llama a `/api/*`. El modelo **solo** responde con `knowledge_chunks` del w
 |-------|----------|
 | SDK | `openai` con `baseURL` (`lib/ai/provider.ts` → `compatibleClient`) |
 | Proveedores | `openai` \| `nan` \| `compatible` (`lib/ai/catalog.ts`) |
-| Clave | Por **usuario**, AES-256-GCM en Next (`SYNAPSE_APP_SECRET`) |
+| Clave | Por **usuario**, AES-256-GCM en Next (`SYNAPSE_APP_SECRET`). El workspace puede usar la del owner (`ai_key_mode=shared`) |
 | Tabla | `user_openai_keys`: ciphertext, last4, provider, URL, modelos. **Sin SELECT** para `authenticated` |
 | Acceso a la key | RPCs `save_own_ai_credential`, `own_openai_key_cipher`, `own_openai_key_meta`, `delete_own_openai_key` |
 | Índice | Una tabla `knowledge_chunks` (`file` \| `document`) |
@@ -72,8 +72,9 @@ Búsqueda: `lib/ai/search.ts` → `toSqlVector` (`[0.1,0.2,…]`) → `hybrid_se
 | Env wrap: `SYNAPSE_APP_SECRET` (≥32). Alias `OPENAI_KEY_ENCRYPTION_SECRET` aún se acepta | El nombre no debe gritar OpenAI |
 | scrypt salt: `synapse-openai-key-v1` | **Cambiar el salt** si se copia a otro producto |
 | Payload: `iv(12) + tag(16) + ciphertext` en base64 | AES-256-GCM |
-| Next **no** usa `OPENAI_API_KEY` | El usuario paga su uso |
-| 409 `missing_ai_key` si no hay credencial | IA, embed y search semántico gated (`AiKeyGate`) |
+| Next **no** usa `OPENAI_API_KEY` | El usuario o el owner del workspace pagan el uso |
+| `workspaces.ai_key_mode` = `personal` \| `shared` | Shared usa la key del owner en el servidor; miembros no ven ciphertext ni last4 |
+| 409 `missing_ai_key` si no hay credencial usable | IA, embed y search semántico gated (`AiKeyGate`) |
 | `authenticated` no hace SELECT de `user_openai_keys` | La UI nunca ve plaintext |
 
 RPCs `SECURITY DEFINER`. Guardar: `PUT /api/openai-key`. Borrar: `DELETE`.

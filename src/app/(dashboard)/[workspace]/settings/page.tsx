@@ -1,11 +1,13 @@
 import { getWorkspaceBySlug } from "@/lib/auth";
 import { InviteForm, ProfileForm } from "@/components/settings/settings-forms";
 import { OpenAIKeyForm } from "@/components/settings/openai-key-form";
+import { WorkspaceAiModeForm } from "@/components/settings/workspace-ai-mode-form";
 import { McpTokensForm } from "@/components/settings/mcp-tokens-form";
 import { PageHeader, Panel, pageNarrow } from "@/components/layout/page-chrome";
 import { Badge } from "@/components/ui/badge";
 import { FREE_PLAN } from "@/lib/plans";
 import { ROLE_LABEL } from "@/lib/labels";
+import { getUserOpenAIMeta } from "@/lib/ai/user-key";
 import type { WorkspaceInvitation, WorkspaceMember, WorkspaceRole } from "@/types/database";
 
 export default async function SettingsPage({
@@ -16,6 +18,8 @@ export default async function SettingsPage({
   const { workspace: slug } = await params;
   const ctx = await getWorkspaceBySlug(slug);
   const canInvite = ctx.role === "owner" || ctx.role === "admin";
+  const personal = await getUserOpenAIMeta(ctx.supabase);
+  const aiKeyMode = ctx.workspace.ai_key_mode === "shared" ? "shared" : "personal";
 
   const { data: members } = await ctx.supabase
     .from("workspace_members")
@@ -42,7 +46,19 @@ export default async function SettingsPage({
       />
 
       <Panel>
-        <h2 className="font-display text-xl">Clave de IA</h2>
+        <h2 className="font-display text-xl">IA del workspace</h2>
+        <div className="mt-4">
+          <WorkspaceAiModeForm
+            workspaceId={ctx.workspace.id}
+            canManage={ctx.role === "owner"}
+            initialMode={aiKeyMode}
+            personalConfigured={personal.configured}
+          />
+        </div>
+      </Panel>
+
+      <Panel>
+        <h2 className="font-display text-xl">Tu clave</h2>
         <div className="mt-4">
           <OpenAIKeyForm />
         </div>

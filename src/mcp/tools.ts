@@ -4,11 +4,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { embedTexts } from "@/lib/ai/embed";
 import { hybridSearchAsUser } from "@/lib/ai/search";
 import { compatibleClient } from "@/lib/ai/provider";
-import { decryptSecret } from "@/lib/crypto/secret";
-import { AI_PRESETS, isAiProviderId } from "@/lib/ai/catalog";
 import { FREE_PLAN } from "@/lib/plans";
 import { blendedChatMeta, chatMeta, embedMeta, recordUsage } from "@/lib/stats/record";
-import type { AiCred } from "@/lib/ai/user-key";
+import { resolveWorkspaceAiCred, type AiCred } from "@/lib/ai/user-key";
 import type { AuthInfo } from "@modelcontextprotocol/server";
 import {
   assertWorkspaceAccess,
@@ -55,28 +53,13 @@ async function monthlyAiTokens(workspaceId: string) {
   return (data ?? []).reduce((sum, row) => sum + Number(row.quantity ?? 0), 0);
 }
 
-async function aiCredFor(userId: string): Promise<AiCred> {
+async function aiCredForWorkspace(workspaceId: string, userId: string): Promise<AiCred> {
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("user_openai_keys")
-    .select("ciphertext, provider, base_url, chat_model, embedding_model, embedding_dim")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data?.ciphertext) {
-    throw new Error("El dueño del token no tiene clave de IA en Ajustes.");
-  }
-  const raw = String(data.provider ?? "openai");
-  const provider = isAiProviderId(raw) ? raw : "openai";
-  const preset = AI_PRESETS[provider];
-  return {
-    apiKey: decryptSecret(data.ciphertext as string),
-    provider,
-    baseUrl: (data.base_url as string) || preset.baseUrl,
-    chatModel: (data.chat_model as string) || preset.chatModel,
-    embeddingModel: (data.embedding_model as string) || preset.embeddingModel,
-    embeddingDim: Number(data.embedding_dim) || preset.embeddingDim,
-  };
+  return resolveWorkspaceAiCred({
+    supabase: admin,
+    workspaceId,
+    actingUserId: userId,
+  });
 }
 
 export function registerSynapseTools(server: McpServer) {
@@ -187,7 +170,7 @@ export function registerSynapseTools(server: McpServer) {
     async ({ workspace, title, content }, ctx) => {
       try {
         const session = sessionOf(ctx.http?.authInfo);
-        const result = await mcpCreateDocument(session, workspace, title, content, aiCredFor);
+        const result = await mcpCreateDocument(session, workspace, title, content, aiCredForWorkspace);
         return json(result);
       } catch (e) {
         return err(e instanceof Error ? e.message : "Error");
@@ -210,7 +193,7 @@ export function registerSynapseTools(server: McpServer) {
     async ({ document_id, title, content }, ctx) => {
       try {
         const session = sessionOf(ctx.http?.authInfo);
-        const result = await mcpUpdateDocument(session, document_id, title, content, aiCredFor);
+        const result = await mcpUpdateDocument(session, document_id, title, content, aiCredForWorkspace);
         return json(result);
       } catch (e) {
         return err(e instanceof Error ? e.message : "Error");
@@ -283,7 +266,7 @@ export function registerSynapseTools(server: McpServer) {
       try {
         const session = sessionOf(ctx.http?.authInfo);
         const ws = await resolveWorkspaceRef(session, workspace);
-        const cred = await aiCredFor(session.userId);
+        const cred = await aiCredForWorkspace(ws.id, session.userId);
         const { vectors, tokens: embedTokens } = await embedTexts([query], cred);
         const [embedding] = vectors;
         const admin = createAdminClient();
@@ -342,7 +325,7 @@ export function registerSynapseTools(server: McpServer) {
         if (used >= FREE_PLAN.aiTokensPerMonth) {
           throw new Error("Límite de tokens del plan Free este mes.");
         }
-        const cred = await aiCredFor(session.userId);
+        const cred = await aiCredForWorkspace(ws.id, session.userId);
         const { vectors, tokens: embedTokens } = await embedTexts([question], cred);
         const [embedding] = vectors;
         const admin = createAdminClient();

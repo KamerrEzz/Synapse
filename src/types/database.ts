@@ -20,6 +20,7 @@ export type Workspace = {
   created_at: string;
   updated_at: string;
   embedding_dim?: number | null;
+  ai_key_mode?: "personal" | "shared";
 };
 
 export type WorkspaceMember = {

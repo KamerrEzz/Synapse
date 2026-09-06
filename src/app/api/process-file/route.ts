@@ -3,7 +3,7 @@ import { chunkText } from "@/lib/ai/chunk";
 import { embedForWorkspace } from "@/lib/ai/embed";
 import { extractFileText } from "@/lib/ai/extract";
 import {
-  getUserAiCred,
+  getWorkspaceAiCred,
   jsonMissingKey,
   MissingAiKeyError,
 } from "@/lib/ai/user-key";
@@ -77,14 +77,14 @@ export async function POST(request: Request) {
     const chunks = chunkText(text);
     let cred;
     try {
-      cred = await getUserAiCred(ctx.supabase);
+      cred = await getWorkspaceAiCred(ctx.supabase, body.workspaceId);
     } catch (err) {
       if (err instanceof MissingAiKeyError) {
         await ctx.supabase
           .from("files")
           .update({ status: "error", error_message: err.message })
           .eq("id", file.id);
-        return jsonMissingKey();
+        return jsonMissingKey(err);
       }
       throw err;
     }

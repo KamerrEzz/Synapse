@@ -7,6 +7,8 @@ import { FileUploader } from "@/components/files/file-uploader";
 import { FileRowActions } from "@/components/files/file-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { getWorkspaceBySlug } from "@/lib/auth";
+import { getWorkspaceAiAccess } from "@/lib/ai/user-key";
+import { WorkspaceAiBanner } from "@/components/ai/workspace-ai-banner";
 import { FILE_STATUS_LABEL } from "@/lib/labels";
 import type { FileRow } from "@/types/database";
 
@@ -24,6 +26,7 @@ export default async function FilesPage({
 }) {
   const { workspace: slug } = await params;
   const ctx = await getWorkspaceBySlug(slug);
+  const access = await getWorkspaceAiAccess(ctx.supabase, ctx.workspace);
   const { data } = await ctx.supabase
     .from("files")
     .select("*")
@@ -37,6 +40,11 @@ export default async function FilesPage({
         title="Archivos"
         description="PDF, Markdown, texto e imágenes. El texto se indexa para la IA con tu clave."
         action={<FileUploader workspaceId={ctx.workspace.id} />}
+      />
+      <WorkspaceAiBanner
+        slug={slug}
+        access={access}
+        personalCopy="Para indexar un PDF hace falta tu clave de IA. Sin ella la subida puede llegar, pero el archivo queda en error."
       />
       {files.length === 0 ? (
         <EmptyState

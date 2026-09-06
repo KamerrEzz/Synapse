@@ -83,7 +83,7 @@ Prompt `answer_from_workspace`: indica al agente que use `search` / `ask` y no i
 
 Cualquier miembro del workspace puede crear, editar y borrar (igual que la UI). `create_document` / `update_document` escriben `plain_text` **y** `yjs_state` (el editor carga Yjs, no el texto plano). Si hay contenido, reindexan para `search`/`ask`. Sin clave de IA el documento se guarda igual y el resultado trae `index_error`. Si alguien tiene el editor abierto, gana el último persist (igual que dos personas).
 
-`search`, `ask` y el reindex de documentos usan la clave de IA del **dueño del token** (BYOK). Sin clave: error en el tool result de búsqueda/pregunta; en CRUD, `index_error`.
+`search`, `ask` y el reindex de documentos usan la clave de IA del workspace: la del **dueño del token** si `ai_key_mode=personal`, o la del **owner** si `shared`. Sin clave usable: error en el tool result de búsqueda/pregunta; en CRUD, `index_error`.
 
 ## Auth
 

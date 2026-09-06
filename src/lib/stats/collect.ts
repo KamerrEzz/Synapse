@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { AI_PRESETS, isAiProviderId } from "@/lib/ai/catalog";
-import { getUserAiCred, MissingAiKeyError } from "@/lib/ai/user-key";
+import { resolveWorkspaceAiCred, MissingAiKeyError } from "@/lib/ai/user-key";
 import { FREE_PLAN } from "@/lib/plans";
 import {
   chatRate,
@@ -186,32 +186,20 @@ export async function collectWorkspaceStats(
   }
 
   let cred: { provider: string; chatModel: string; embeddingModel: string } | null = null;
-  if (opts?.actingUserId) {
-    const { data: keyRow, error: keyError } = await supabase
-      .from("user_openai_keys")
-      .select("provider, chat_model, embedding_model")
-      .eq("user_id", opts.actingUserId)
-      .maybeSingle();
-    if (keyError) throw new Error(keyError.message);
-    const raw = String(keyRow?.provider ?? "openai");
-    const providerId = isAiProviderId(raw) ? raw : "openai";
+  try {
+    const c = await resolveWorkspaceAiCred({
+      supabase,
+      workspaceId: workspace.id,
+      actingUserId: opts?.actingUserId,
+    });
+    cred = { provider: c.provider, chatModel: c.chatModel, embeddingModel: c.embeddingModel };
+  } catch (err) {
+    if (!(err instanceof MissingAiKeyError)) throw err;
     cred = {
-      provider: providerId,
-      chatModel: (keyRow?.chat_model as string | null) || AI_PRESETS[providerId].chatModel,
-      embeddingModel: (keyRow?.embedding_model as string | null) || AI_PRESETS[providerId].embeddingModel,
+      provider: "openai",
+      chatModel: AI_PRESETS.openai.chatModel,
+      embeddingModel: AI_PRESETS.openai.embeddingModel,
     };
-  } else {
-    try {
-      const c = await getUserAiCred(supabase);
-      cred = { provider: c.provider, chatModel: c.chatModel, embeddingModel: c.embeddingModel };
-    } catch (err) {
-      if (!(err instanceof MissingAiKeyError)) throw err;
-      cred = {
-        provider: "openai",
-        chatModel: AI_PRESETS.openai.chatModel,
-        embeddingModel: AI_PRESETS.openai.embeddingModel,
-      };
-    }
   }
 
   const chatModel = cred.chatModel;

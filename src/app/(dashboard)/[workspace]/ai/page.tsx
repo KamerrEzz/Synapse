@@ -3,7 +3,7 @@ import { AiChat } from "@/components/ai/ai-chat";
 import { AiKeyGate } from "@/components/ai/ai-key-gate";
 import { AiSidebar } from "@/components/ai/ai-sidebar";
 import { SplitNav } from "@/components/layout/split-nav";
-import { getUserOpenAIMeta } from "@/lib/ai/user-key";
+import { getWorkspaceAiAccess } from "@/lib/ai/user-key";
 import Link from "next/link";
 import type { AiConversation, AiMessage } from "@/types/database";
 
@@ -14,7 +14,7 @@ export default async function AiPage({
 }) {
   const { workspace: slug } = await params;
   const ctx = await getWorkspaceBySlug(slug);
-  const keyMeta = await getUserOpenAIMeta(ctx.supabase);
+  const access = await getWorkspaceAiAccess(ctx.supabase, ctx.workspace);
   const { data: convos } = await ctx.supabase
     .from("ai_conversations")
     .select("*")
@@ -38,7 +38,7 @@ export default async function AiPage({
           </Link>
         }
       >
-        {keyMeta.configured ? (
+        {access.configured ? (
           <AiChat
             workspaceId={ctx.workspace.id}
             slug={slug}
@@ -46,7 +46,7 @@ export default async function AiPage({
             initialMessages={[] as AiMessage[]}
           />
         ) : (
-          <AiKeyGate slug={slug} />
+          <AiKeyGate slug={slug} mode={access.mode} isOwner={ctx.role === "owner"} />
         )}
       </SplitNav>
     </div>

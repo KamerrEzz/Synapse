@@ -13,6 +13,8 @@ import {
 
 type Admin = ReturnType<typeof createAdminClient>;
 
+type CredLoader = (workspaceId: string, userId: string) => Promise<AiCred>;
+
 type WikiDoc = {
   id: string;
   workspace_id: string;
@@ -39,7 +41,7 @@ async function reindexWiki(
   session: McpSession,
   workspaceId: string,
   doc: { id: string; title: string; plain_text: string },
-  credLoader: (userId: string) => Promise<AiCred>,
+  credLoader: CredLoader,
 ) {
   await admin
     .from("knowledge_chunks")
@@ -50,7 +52,7 @@ async function reindexWiki(
   const chunks = chunkText(doc.plain_text || "");
   if (chunks.length === 0) return { chunks: 0 };
 
-  const cred = await credLoader(session.userId);
+  const cred = await credLoader(workspaceId, session.userId);
   const { vectors: embeddings, tokens } = await embedTexts(chunks, cred);
   const dim = embeddings[0]?.length ?? 0;
   const { data: ws, error: wsError } = await admin
@@ -106,7 +108,7 @@ export async function mcpCreateDocument(
   workspace: string,
   title: string | undefined,
   content: string | undefined,
-  credLoader: (userId: string) => Promise<AiCred>,
+  credLoader: CredLoader,
 ) {
   const ws = await resolveWorkspaceRef(session, workspace);
   const admin = createAdminClient();
@@ -154,7 +156,7 @@ export async function mcpUpdateDocument(
   documentId: string,
   title: string | undefined,
   content: string | undefined,
-  credLoader: (userId: string) => Promise<AiCred>,
+  credLoader: CredLoader,
 ) {
   if (title === undefined && content === undefined) {
     throw new Error("Pasa title y/o content");
