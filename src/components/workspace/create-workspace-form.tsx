@@ -26,7 +26,7 @@ export function CreateWorkspaceForm() {
       if (error) throw error;
       const slug = (data as { slug: string }).slug;
       toast.success("Workspace creado");
-      router.push(`/${slug}/documents`);
+      router.push(`/${slug}`);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No se pudo crear");

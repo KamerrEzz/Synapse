@@ -29,7 +29,7 @@ test.describe("authenticated workspace flow", () => {
     const name = `E2E ${Date.now()}`;
     await page.getByLabel("Nombre").fill(name);
     await page.getByRole("button", { name: "Crear workspace" }).click();
-    await expect(page.getByRole("heading", { name: "Documentos" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: /buen día/i })).toBeVisible({
       timeout: 60_000,
     });
 
