@@ -40,14 +40,16 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className={`${pageNarrow} space-y-6`}>
+    <main className={pageNarrow}>
       <PageHeader
         title="Ajustes"
         description={`${ctx.workspace.name} · plan ${ctx.workspace.plan}. Tokens IA este mes: ${Number(tokenUsage ?? 0).toLocaleString("es")} / ${FREE_PLAN.aiTokensPerMonth.toLocaleString("es")}.`}
       />
 
       <Panel>
-        <h2 className="font-display text-xl">IA del workspace</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-paper">
+          IA del workspace
+        </h2>
         <div className="mt-4">
           <WorkspaceAiModeForm
             workspaceId={ctx.workspace.id}
@@ -59,14 +61,18 @@ export default async function SettingsPage({
       </Panel>
 
       <Panel>
-        <h2 className="font-display text-xl">Tu clave</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-paper">
+          Tu clave
+        </h2>
         <div className="mt-4">
           <OpenAIKeyForm />
         </div>
       </Panel>
 
       <Panel>
-        <h2 className="font-display text-xl">Agentes MCP</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-paper">
+          Agentes MCP
+        </h2>
         <div className="mt-4">
           <McpTokensForm workspaceId={ctx.workspace.id} />
           <McpSkillsDownload />
@@ -74,26 +80,33 @@ export default async function SettingsPage({
       </Panel>
 
       <Panel>
-        <h2 className="font-display text-xl">Tu perfil</h2>
+        <h2 className="font-display text-2xl font-medium tracking-tight text-paper">
+          Tu perfil
+        </h2>
         <div className="mt-4">
           <ProfileForm
             fullName={ctx.profile?.full_name ?? ""}
+            avatarUrl={ctx.profile?.avatar_url ?? null}
             userId={ctx.user.id}
           />
         </div>
       </Panel>
 
       <Panel>
-        <h2 className="font-display text-xl">Miembros</h2>
-        <ul className="mt-4 divide-y divide-line overflow-hidden rounded-xl border border-line">
+        <h2 className="font-display text-2xl font-medium tracking-tight text-paper">
+          Miembros
+        </h2>
+        <ul className="mt-4 divide-y divide-line">
           {(members as WorkspaceMember[] | null)?.map((m) => (
-            <li key={m.user_id} className="flex items-center justify-between gap-3 bg-raised/40 px-4 py-3">
+            <li key={m.user_id} className="flex items-center justify-between gap-3 py-3">
               <span className="min-w-0 truncate text-sm">{m.profiles?.full_name || m.user_id}</span>
               <Badge>{ROLE_LABEL[m.role as WorkspaceRole] ?? m.role}</Badge>
             </li>
           ))}
         </ul>
-        <InviteForm workspaceId={ctx.workspace.id} canInvite={canInvite} />
+        <div className="mt-6">
+          <InviteForm workspaceId={ctx.workspace.id} canInvite={canInvite} />
+        </div>
         {canInvite && (invitations as WorkspaceInvitation[] | null)?.length ? (
           <ul className="mt-4 space-y-1 text-sm text-mist">
             {(invitations as WorkspaceInvitation[]).map((inv) => (

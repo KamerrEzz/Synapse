@@ -13,10 +13,14 @@ export function AiSidebar({
 }) {
   return (
     <>
-      <div className="border-b border-line px-4 py-4">
+      <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="h-2 w-2 shrink-0 rounded-full bg-spark" aria-hidden />
+          <h2 className="truncate font-display text-lg tracking-tight">Conversaciones</h2>
+        </div>
         <Link
           href={`/${slug}/ai`}
-          className="inline-flex h-11 items-center rounded-lg bg-spark px-3 text-sm font-medium text-ink hover:bg-spark-hover md:h-9"
+          className="inline-flex h-9 shrink-0 items-center rounded-lg bg-spark px-3 text-sm font-medium text-ink hover:bg-spark-hover"
         >
           Nueva pregunta
         </Link>

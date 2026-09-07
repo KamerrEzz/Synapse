@@ -17,7 +17,7 @@ function Avatar({
   return (
     <span
       className={cn(
-        "inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-raised text-xs font-medium text-spark",
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-raised text-xs font-medium text-spark ring-1 ring-line",
         className,
       )}
     >

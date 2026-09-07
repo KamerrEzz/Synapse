@@ -135,7 +135,10 @@ export function AiChat({
       <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6 sm:py-8">
         {messages.length === 0 ? (
           <div className="mx-auto max-w-lg rounded-2xl border border-line bg-shell px-4 py-6 sm:px-6 sm:py-8">
-            <p className="font-display text-xl">Pregunta al workspace</p>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-spark" aria-hidden />
+              <p className="font-display text-xl">Pregunta al workspace</p>
+            </div>
             <p className="mt-2 text-sm leading-relaxed text-mist">
               Responde con documentos y archivos indexados. Si no está en vuestra base, lo dirá.
             </p>
@@ -175,7 +178,7 @@ export function AiChat({
         <div ref={bottom} />
       </div>
       <form onSubmit={send} className="border-t border-line bg-shell p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
-        <div className="rounded-xl border border-line bg-raised p-2">
+        <div className="rounded-xl border border-line bg-raised p-2 transition-colors focus-within:border-spark/60">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

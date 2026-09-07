@@ -9,9 +9,11 @@ import { toast } from "sonner";
 export function NewDocumentButton({
   workspaceId,
   slug,
+  className,
 }: {
   workspaceId: string;
   slug: string;
+  className?: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export function NewDocumentButton({
   }
 
   return (
-    <Button onClick={create} disabled={loading}>
+    <Button onClick={create} disabled={loading} className={className}>
       Nuevo documento
     </Button>
   );

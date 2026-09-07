@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -9,9 +10,11 @@ import { useRouter } from "next/navigation";
 
 export function ProfileForm({
   fullName,
+  avatarUrl,
   userId,
 }: {
   fullName: string;
+  avatarUrl?: string | null;
   userId: string;
 }) {
   const [name, setName] = useState(fullName);
@@ -69,7 +72,15 @@ export function ProfileForm({
         />
       </div>
       <label className="block text-sm text-mist">
-        Avatar
+        <span className="flex items-center gap-3">
+          <Avatar
+            src={avatarUrl}
+            alt={name || "Avatar"}
+            fallback={name || "U"}
+            className="h-12 w-12 text-sm"
+          />
+          <span>Avatar</span>
+        </span>
         <input
           type="file"
           accept="image/*"

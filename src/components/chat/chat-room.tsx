@@ -121,7 +121,7 @@ export function ChatRoom({
         <div ref={bottom} />
       </div>
       <form onSubmit={send} className="border-t border-line bg-shell p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
-        <div className="flex gap-2 rounded-xl border border-line bg-raised p-1.5">
+        <div className="flex gap-2 rounded-xl border border-line bg-raised p-1.5 transition-colors focus-within:border-spark/60">
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}

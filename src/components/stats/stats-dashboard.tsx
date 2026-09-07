@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Panel } from "@/components/layout/page-chrome";
 import {
   ActivityChart,
   CostBarChart,
@@ -13,6 +12,7 @@ import {
 } from "@/components/stats/stats-charts";
 import { downloadAllCsv, downloadCsv, EXPORT_KINDS } from "@/lib/stats/export";
 import { STAT_RANGES, type StatsSnapshot } from "@/lib/stats/types";
+import type { ReactNode } from "react";
 
 function formatUsd(value: number) {
   if (value === 0) return "$0";
@@ -53,7 +53,7 @@ function Meter({
     <div>
       <div className="flex items-baseline justify-between gap-3 text-xs">
         <span className="text-mist">{label}</span>
-        <span className="text-paper">
+        <span className="text-paper tabular-nums">
           {format(used)} / {format(cap)}
         </span>
       </div>
@@ -67,25 +67,23 @@ function Meter({
   );
 }
 
-function Kpi({
-  label,
-  value,
-  hint,
-  warn,
+function Section({
+  title,
+  note,
+  children,
 }: {
-  label: string;
-  value: string;
-  hint?: string;
-  warn?: boolean;
+  title: string;
+  note?: string;
+  children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-raised/40 px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-mist">{label}</p>
-      <p className={`mt-1 font-display text-2xl tracking-tight ${warn ? "text-danger" : "text-paper"}`}>
-        {value}
-      </p>
-      {hint ? <p className="mt-1 text-xs text-mist">{hint}</p> : null}
-    </div>
+    <section className="border-t border-line pt-8 sm:pt-10">
+      <h2 className="font-display text-2xl font-medium tracking-tight text-paper sm:text-3xl">
+        {title}
+      </h2>
+      {note ? <p className="mt-1 text-xs leading-relaxed text-mist">{note}</p> : null}
+      <div className="mt-6">{children}</div>
+    </section>
   );
 }
 
@@ -114,8 +112,68 @@ export function StatsDashboard({
     alerts.push(`${snap.knowledge.filesImages} imagen(es): no se indexan (sin OCR).`);
   }
 
+  const kpis: Array<{
+    label: string;
+    value: string;
+    hint?: string;
+    warn?: boolean;
+  }> = [
+    {
+      label: "Coste IA (rango)",
+      value: formatUsd(snap.ai.usdInRange),
+      hint: `${formatUsd(snap.ai.usdMonth)} este mes · ${formatUsd(snap.ai.usdPerAssistantReply)} / respuesta`,
+    },
+    {
+      label: "Tokens chat este mes",
+      value: formatTokens(snap.plan.aiTokensMonth),
+      hint: `${tokenPct.toFixed(0)}% de ${formatTokens(snap.plan.aiTokensCap)}`,
+      warn: tokenPct >= 90,
+    },
+    {
+      label: "Entrada / salida",
+      value: `${formatTokens(snap.ai.promptTokensInRange)} / ${formatTokens(snap.ai.completionTokensInRange)}`,
+      hint: snap.ai.eventsWithUsageSplit
+        ? `Split real en ${snap.ai.eventsWithUsageSplit} de ${snap.ai.eventsInRange} eventos`
+        : "Sin usage de la API en este rango; el coste usa 70/30",
+    },
+    {
+      label: "Índice RAG",
+      value: formatTokens(snap.knowledge.chunks),
+      hint: `${formatTokens(snap.knowledge.chars)} caracteres · dim ${snap.workspace.embeddingDim ?? "—"}`,
+    },
+    {
+      label: "Cobertura wiki",
+      value: `${snap.knowledge.docsIndexed}/${snap.knowledge.docsTotal}`,
+      hint: `${snap.knowledge.docsUnindexed} con texto sin indexar`,
+      warn: snap.knowledge.docsUnindexed > 0,
+    },
+    {
+      label: "Archivos",
+      value: `${snap.knowledge.filesReady} listos`,
+      hint: `${snap.plan.files}/${snap.plan.filesCap} · ${formatBytes(snap.knowledge.filesBytes)} · ${snap.knowledge.filesError} error`,
+      warn: snap.knowledge.filesError > 0,
+    },
+    {
+      label: "Chat del equipo",
+      value: formatTokens(snap.collab.messagesInRange),
+      hint: `${snap.collab.messagesTotal} en total · ${snap.collab.uniqueAuthors} autores`,
+    },
+    {
+      label: "Conversaciones IA",
+      value: String(snap.collab.aiConversations),
+      hint: `${snap.collab.assistantReplies} respuestas · ${Math.round(snap.collab.avgReplyChars)} c. media`,
+    },
+    {
+      label: "Agentes MCP",
+      value: String(snap.mcp.active),
+      hint: snap.mcp.lastUsedAt
+        ? `${snap.mcp.used} usados · último ${new Date(snap.mcp.lastUsedAt).toLocaleString("es")}`
+        : "Ningún token usado aún",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-12 sm:space-y-16">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2" role="group" aria-label="Rango">
           {STAT_RANGES.map((d) => (
@@ -151,68 +209,24 @@ export function StatsDashboard({
         </ul>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi
-          label="Coste IA (rango)"
-          value={formatUsd(snap.ai.usdInRange)}
-          hint={`${formatUsd(snap.ai.usdMonth)} este mes · ${formatUsd(snap.ai.usdPerAssistantReply)} / respuesta`}
-        />
-        <Kpi
-          label="Tokens chat este mes"
-          value={formatTokens(snap.plan.aiTokensMonth)}
-          hint={`${tokenPct.toFixed(0)}% de ${formatTokens(snap.plan.aiTokensCap)}`}
-          warn={tokenPct >= 90}
-        />
-        <Kpi
-          label="Entrada / salida"
-          value={`${formatTokens(snap.ai.promptTokensInRange)} / ${formatTokens(snap.ai.completionTokensInRange)}`}
-          hint={
-            snap.ai.eventsWithUsageSplit
-              ? `Split real en ${snap.ai.eventsWithUsageSplit} de ${snap.ai.eventsInRange} eventos`
-              : "Sin usage de la API en este rango; el coste usa 70/30"
-          }
-        />
-        <Kpi
-          label="Índice RAG"
-          value={formatTokens(snap.knowledge.chunks)}
-          hint={`${formatTokens(snap.knowledge.chars)} caracteres · dim ${snap.workspace.embeddingDim ?? "—"}`}
-        />
-        <Kpi
-          label="Cobertura wiki"
-          value={`${snap.knowledge.docsIndexed}/${snap.knowledge.docsTotal}`}
-          hint={`${snap.knowledge.docsUnindexed} con texto sin indexar`}
-          warn={snap.knowledge.docsUnindexed > 0}
-        />
-        <Kpi
-          label="Archivos"
-          value={`${snap.knowledge.filesReady} listos`}
-          hint={`${snap.plan.files}/${snap.plan.filesCap} · ${formatBytes(snap.knowledge.filesBytes)} · ${snap.knowledge.filesError} error`}
-          warn={snap.knowledge.filesError > 0}
-        />
-        <Kpi
-          label="Chat del equipo"
-          value={formatTokens(snap.collab.messagesInRange)}
-          hint={`${snap.collab.messagesTotal} en total · ${snap.collab.uniqueAuthors} autores`}
-        />
-        <Kpi
-          label="Conversaciones IA"
-          value={String(snap.collab.aiConversations)}
-          hint={`${snap.collab.assistantReplies} respuestas · ${Math.round(snap.collab.avgReplyChars)} c. media`}
-        />
-        <Kpi
-          label="Agentes MCP"
-          value={String(snap.mcp.active)}
-          hint={
-            snap.mcp.lastUsedAt
-              ? `${snap.mcp.used} usados · último ${new Date(snap.mcp.lastUsedAt).toLocaleString("es")}`
-              : "Ningún token usado aún"
-          }
-        />
+      <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="border-t border-line py-5">
+            <p className="text-[11px] uppercase tracking-wide text-mist">{kpi.label}</p>
+            <p
+              className={`mt-1 font-display text-2xl font-medium tracking-tight tabular-nums sm:text-3xl ${
+                kpi.warn ? "text-danger" : "text-paper"
+              }`}
+            >
+              {kpi.value}
+            </p>
+            {kpi.hint ? <p className="mt-1 text-xs leading-relaxed text-mist">{kpi.hint}</p> : null}
+          </div>
+        ))}
       </div>
 
-      <Panel>
-        <h2 className="font-display text-xl">Techos del plan Free</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <Section title="Techos del plan Free">
+        <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
           <Meter
             label="Tokens de chat este mes"
             used={snap.plan.aiTokensMonth}
@@ -223,115 +237,104 @@ export function StatsDashboard({
           <Meter label="Documentos wiki" used={snap.plan.documents} cap={snap.plan.documentsCap} />
           <Meter label="Miembros" used={snap.plan.members} cap={snap.plan.membersCap} />
         </div>
-      </Panel>
+      </Section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Panel>
-          <h2 className="font-display text-xl">Tokens por día</h2>
-          <p className="mt-1 text-xs text-mist">Chat/RAG vs embeddings. El eje Y es cantidad de tokens.</p>
-          <div className="mt-4">
-            <UsageAreaChart data={snap.series} />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Coste estimado USD</h2>
-          <p className="mt-1 text-xs text-mist">{snap.ai.caveat}</p>
-          <div className="mt-4">
-            <CostBarChart data={snap.series} />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Origen del gasto (USD)</h2>
-          <p className="mt-1 text-xs text-mist">Coste estimado según la herramienta que disparó el uso.</p>
-          <div className="mt-4">
-            <NamedBarChart data={snap.ai.usdBySource} unit="USD" />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Actividad del workspace</h2>
-          <p className="mt-1 text-xs text-mist">Mensajes, respuestas de IA y archivos nuevos.</p>
-          <div className="mt-4">
-            <ActivityChart data={snap.series} />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Tokens por tipo</h2>
-          <p className="mt-1 text-xs text-mist">
-            Chat {formatTokens(snap.ai.tokensInRange)} · embeddings {formatTokens(snap.ai.embeddingTokensInRange)}
-            {snap.ai.eventsWithUsageSplit
-              ? ` · ${snap.ai.eventsWithUsageSplit} eventos con split entrada/salida`
-              : ""}
-          </p>
-          <div className="mt-4">
-            <MixPie data={snap.ai.byKind} />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Composición del índice</h2>
-          <p className="mt-1 text-xs text-mist">
-            Media {Math.round(snap.knowledge.avgChars).toLocaleString("es")} caracteres por chunk.
-          </p>
-          <div className="mt-4">
-            <MixPie
-              data={[
-                { key: "wiki", label: "Wiki", value: snap.knowledge.documentChunks },
-                { key: "file", label: "Archivos", value: snap.knowledge.fileChunks },
-              ]}
-            />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Tokens por origen</h2>
-          <p className="mt-1 text-xs text-mist">Volumen, no dólares. Sirve para ver qué feature consume.</p>
-          <div className="mt-4">
-            <NamedBarChart data={snap.ai.bySource} />
-          </div>
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-xl">Modelos usados</h2>
-          <p className="mt-1 text-xs text-mist">Tokens agrupados por el modelo guardado en cada evento.</p>
-          <div className="mt-4">
-            <NamedBarChart data={snap.ai.byModel} />
-          </div>
-        </Panel>
-      </div>
+      <Section
+        title="Tokens por día"
+        note="Chat/RAG vs embeddings. El eje Y es cantidad de tokens."
+      >
+        <UsageAreaChart data={snap.series} />
+      </Section>
 
-      <Panel>
-        <h2 className="font-display text-xl">Tarifa usada para el coste</h2>
-        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div>
+      <Section title="Coste estimado USD" note={snap.ai.caveat}>
+        <CostBarChart data={snap.series} />
+      </Section>
+
+      <Section
+        title="Origen del gasto (USD)"
+        note="Coste estimado según la herramienta que disparó el uso."
+      >
+        <NamedBarChart data={snap.ai.usdBySource} unit="USD" />
+      </Section>
+
+      <Section
+        title="Actividad del workspace"
+        note="Mensajes, respuestas de IA y archivos nuevos."
+      >
+        <ActivityChart data={snap.series} />
+      </Section>
+
+      <Section
+        title="Tokens por tipo"
+        note={`Chat ${formatTokens(snap.ai.tokensInRange)} · embeddings ${formatTokens(snap.ai.embeddingTokensInRange)}${
+          snap.ai.eventsWithUsageSplit
+            ? ` · ${snap.ai.eventsWithUsageSplit} eventos con split entrada/salida`
+            : ""
+        }`}
+      >
+        <MixPie data={snap.ai.byKind} />
+      </Section>
+
+      <Section
+        title="Composición del índice"
+        note={`Media ${Math.round(snap.knowledge.avgChars).toLocaleString("es")} caracteres por chunk.`}
+      >
+        <MixPie
+          data={[
+            { key: "wiki", label: "Wiki", value: snap.knowledge.documentChunks },
+            { key: "file", label: "Archivos", value: snap.knowledge.fileChunks },
+          ]}
+        />
+      </Section>
+
+      <Section
+        title="Tokens por origen"
+        note="Volumen, no dólares. Sirve para ver qué feature consume."
+      >
+        <NamedBarChart data={snap.ai.bySource} />
+      </Section>
+
+      <Section
+        title="Modelos usados"
+        note="Tokens agrupados por el modelo guardado en cada evento."
+      >
+        <NamedBarChart data={snap.ai.byModel} />
+      </Section>
+
+      <Section title="Tarifa usada para el coste">
+        <dl className="grid gap-x-8 gap-y-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <div className="border-t border-line pt-4">
             <dt className="text-mist">Proveedor</dt>
-            <dd className="text-paper">{snap.ai.pricing.provider}</dd>
+            <dd className="mt-0.5 text-paper">{snap.ai.pricing.provider}</dd>
           </div>
-          <div>
+          <div className="border-t border-line pt-4">
             <dt className="text-mist">Chat</dt>
-            <dd className="text-paper">
-              {snap.ai.pricing.chatModel} · ${snap.ai.pricing.chatInputPerM}/${snap.ai.pricing.chatOutputPerM} por 1M
+            <dd className="mt-0.5 text-paper">
+              {snap.ai.pricing.chatModel} · ${snap.ai.pricing.chatInputPerM}/{snap.ai.pricing.chatOutputPerM} por 1M
               {snap.ai.pricing.chatExact ? "" : " (referencia)"}
             </dd>
           </div>
-          <div>
+          <div className="border-t border-line pt-4">
             <dt className="text-mist">Embeddings</dt>
-            <dd className="text-paper">
+            <dd className="mt-0.5 text-paper">
               {snap.ai.pricing.embeddingModel} · ${snap.ai.pricing.embedPerM} por 1M
               {snap.ai.pricing.embedExact ? "" : " (referencia)"}
             </dd>
           </div>
-          <div>
+          <div className="border-t border-line pt-4">
             <dt className="text-mist">Miembros / docs</dt>
-            <dd className="text-paper">
+            <dd className="mt-0.5 text-paper tabular-nums">
               {snap.plan.members}/{snap.plan.membersCap} · {snap.plan.documents}/{snap.plan.documentsCap}
             </dd>
           </div>
         </dl>
-      </Panel>
+      </Section>
 
-      <Panel>
-        <h2 className="font-display text-xl">Coste por persona</h2>
+      <Section title="Coste por persona">
         {snap.ai.byUser.length === 0 ? (
-          <p className="mt-3 text-sm text-mist">Nadie ha disparado eventos de IA en este rango.</p>
+          <p className="text-sm text-mist">Nadie ha disparado eventos de IA en este rango.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[28rem] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-mist">
                 <tr>
@@ -345,9 +348,9 @@ export function StatsDashboard({
                 {snap.ai.byUser.map((u) => (
                   <tr key={u.userId}>
                     <td className="py-2 text-paper">{u.name}</td>
-                    <td className="py-2 text-mist">{formatTokens(u.tokens)}</td>
-                    <td className="py-2 text-paper">{formatUsd(u.usd)}</td>
-                    <td className="py-2 text-mist">
+                    <td className="py-2 text-mist tabular-nums">{formatTokens(u.tokens)}</td>
+                    <td className="py-2 text-paper tabular-nums">{formatUsd(u.usd)}</td>
+                    <td className="py-2 text-mist tabular-nums">
                       {snap.ai.usdInRange ? `${((u.usd / snap.ai.usdInRange) * 100).toFixed(1)}%` : "—"}
                     </td>
                   </tr>
@@ -356,14 +359,13 @@ export function StatsDashboard({
             </table>
           </div>
         )}
-      </Panel>
+      </Section>
 
-      <Panel>
-        <h2 className="font-display text-xl">Desglose por modelo</h2>
+      <Section title="Desglose por modelo">
         {snap.ai.byModel.length === 0 ? (
-          <p className="mt-3 text-sm text-mist">No hay eventos de IA con modelo en este rango.</p>
+          <p className="text-sm text-mist">No hay eventos de IA con modelo en este rango.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[28rem] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-mist">
                 <tr>
@@ -376,22 +378,21 @@ export function StatsDashboard({
                 {snap.ai.byModel.map((m) => (
                   <tr key={m.key}>
                     <td className="py-2 text-paper">{m.label}</td>
-                    <td className="py-2 text-mist">{formatTokens(m.value)}</td>
-                    <td className="py-2 text-paper">{formatUsd(m.usd ?? 0)}</td>
+                    <td className="py-2 text-mist tabular-nums">{formatTokens(m.value)}</td>
+                    <td className="py-2 text-paper tabular-nums">{formatUsd(m.usd ?? 0)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </Panel>
+      </Section>
 
-      <Panel>
-        <h2 className="font-display text-xl">Fuentes más pesadas del índice</h2>
+      <Section title="Fuentes más pesadas del índice">
         {snap.topSources.length === 0 ? (
-          <p className="mt-3 text-sm text-mist">El índice está vacío.</p>
+          <p className="text-sm text-mist">El índice está vacío.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full min-w-[32rem] text-left text-sm">
               <thead className="text-xs uppercase tracking-wide text-mist">
                 <tr>
@@ -406,20 +407,19 @@ export function StatsDashboard({
                   <tr key={`${s.sourceType}-${s.sourceId}`}>
                     <td className="max-w-[16rem] truncate py-2 text-paper">{s.title}</td>
                     <td className="py-2 text-mist">{s.sourceType === "file" ? "Archivo" : "Wiki"}</td>
-                    <td className="py-2 text-mist">{s.chunks}</td>
-                    <td className="py-2 text-mist">{s.chars.toLocaleString("es")}</td>
+                    <td className="py-2 text-mist tabular-nums">{s.chunks}</td>
+                    <td className="py-2 text-mist tabular-nums">{s.chars.toLocaleString("es")}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </Panel>
+      </Section>
 
       {snap.documents.some((d) => d.chars > 0 && !d.indexed) ? (
-        <Panel>
-          <h2 className="font-display text-xl">Wiki sin indexar</h2>
-          <ul className="mt-3 space-y-1 text-sm text-mist">
+        <Section title="Wiki sin indexar">
+          <ul className="space-y-1 text-sm text-mist">
             {snap.documents
               .filter((d) => d.chars > 0 && !d.indexed)
               .map((d) => (
@@ -428,13 +428,12 @@ export function StatsDashboard({
                 </li>
               ))}
           </ul>
-        </Panel>
+        </Section>
       ) : null}
 
       {snap.files.some((f) => f.status === "error") ? (
-        <Panel>
-          <h2 className="font-display text-xl">Archivos en error</h2>
-          <ul className="mt-3 space-y-2 text-sm">
+        <Section title="Archivos en error">
+          <ul className="space-y-2 text-sm">
             {snap.files
               .filter((f) => f.status === "error")
               .map((f) => (
@@ -444,7 +443,7 @@ export function StatsDashboard({
                 </li>
               ))}
           </ul>
-        </Panel>
+        </Section>
       ) : null}
     </div>
   );

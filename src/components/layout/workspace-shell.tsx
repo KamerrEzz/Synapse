@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/ui/avatar";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ROLE_LABEL } from "@/lib/labels";
 import { LeftSheet } from "@/components/layout/left-sheet";
-import { Sidebar } from "@/components/layout/sidebar";
+import { TopNav } from "@/components/layout/topnav";
+import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+import { isNavActive, NAV_ITEMS } from "@/components/layout/nav-items";
 import type { Profile, Workspace, WorkspaceRole } from "@/types/database";
 
 export function WorkspaceShell({
@@ -22,44 +28,78 @@ export function WorkspaceShell({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  const initials = (profile?.full_name || profile?.id || "?").slice(0, 2);
 
-  useEffect(() => {
+  // Close the sheet when navigation lands (browser back/forward included).
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
-  const nav = (
-    <Sidebar
-      workspace={workspace}
-      role={role}
-      profile={profile}
-      workspaces={workspaces}
-      onNavigate={() => setOpen(false)}
-    />
+  const sheetNav = (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-line px-4 py-4">
+        <span className="h-2 w-2 rounded-full bg-spark" aria-hidden />
+        <span className="min-w-0 truncate font-display text-lg tracking-tight text-paper">
+          {workspace.name}
+        </span>
+      </div>
+      <nav aria-label="Navegación" className="flex-1 space-y-0.5 overflow-y-auto p-2">
+        {NAV_ITEMS.map((item) => {
+          const href = `/${workspace.slug}${item.href}`;
+          const active = isNavActive(pathname, workspace.slug, item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              onClick={() => setOpen(false)}
+              className={cn(
+                "flex h-11 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors",
+                active
+                  ? "bg-raised text-paper"
+                  : "text-mist hover:bg-raised/70 hover:text-paper",
+              )}
+            >
+              <Icon className={cn("h-4 w-4", active ? "text-spark" : "")} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="border-t border-line px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-3 px-1">
+          <Avatar src={profile?.avatar_url} fallback={initials} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm text-paper">
+              {profile?.full_name || "Tu perfil"}
+            </p>
+            <p className="text-[11px] text-mist">{ROLE_LABEL[role]}</p>
+          </div>
+        </div>
+        <div className="mt-3">
+          <SignOutButton />
+        </div>
+      </div>
+    </div>
   );
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-ink lg:flex-row">
-      <div className="hidden h-full lg:flex">{nav}</div>
+    <div className="flex h-dvh min-h-0 flex-col bg-ink">
+      <TopNav
+        workspace={workspace}
+        role={role}
+        profile={profile}
+        workspaces={workspaces}
+        onOpenNav={() => setOpen(true)}
+      />
+      <div className="min-h-0 flex-1 overflow-y-auto pb-14 lg:pb-0">{children}</div>
+      <MobileTabBar slug={workspace.slug} onOpenNav={() => setOpen(true)} />
       <LeftSheet open={open} onClose={() => setOpen(false)} title="Navegación" closeAt="lg">
-        {nav}
+        {sheetNav}
       </LeftSheet>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex min-h-12 shrink-0 items-center gap-1 border-b border-line bg-shell px-2 pt-[env(safe-area-inset-top)] lg:hidden">
-          <button
-            type="button"
-            aria-expanded={open}
-            aria-label="Abrir menú"
-            onClick={() => setOpen(true)}
-            className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-lg text-paper hover:bg-raised"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <span className="min-w-0 truncate font-display text-lg tracking-tight">
-            {workspace.name}
-          </span>
-        </header>
-        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
-      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { SearchHit } from "@/types/database";
@@ -54,19 +55,25 @@ export function SearchBox({
         </Button>
       </form>
       {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
-      <ul className="mt-8 space-y-4">
+      <ul className="mt-8 divide-y divide-line border-b border-line">
         {hits.map((hit) => (
-          <li key={hit.id} className="max-w-2xl rounded-xl border border-line bg-shell px-4 py-3">
-            <Link
-              href={
-                hit.source_type === "document"
-                  ? `/${slug}/documents/${hit.source_id}`
-                  : `/${slug}/files`
-              }
-              className="text-spark hover:underline"
-            >
-              {String(hit.metadata?.title ?? hit.source_type)}
-            </Link>
+          <li
+            key={hit.id}
+            className="-mx-4 px-4 py-5 transition-colors hover:bg-raised/50"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={
+                  hit.source_type === "document"
+                    ? `/${slug}/documents/${hit.source_id}`
+                    : `/${slug}/files`
+                }
+                className="font-display text-lg font-medium tracking-tight text-paper transition-colors hover:text-spark-hover"
+              >
+                {String(hit.metadata?.title ?? hit.source_type)}
+              </Link>
+              <Badge>{hit.source_type === "document" ? "Documento" : "Archivo"}</Badge>
+            </div>
             <p className="mt-1 text-sm leading-relaxed text-mist">{hit.content}</p>
           </li>
         ))}

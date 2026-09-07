@@ -5,6 +5,7 @@ import { getWorkspaceBySlug } from "@/lib/auth";
 import { NewDocumentButton } from "@/components/documents/new-document-button";
 import { PageHeader, pageWide } from "@/components/layout/page-chrome";
 import { EmptyState } from "@/components/layout/empty-state";
+import { Badge } from "@/components/ui/badge";
 import type { DocumentRow } from "@/types/database";
 
 export default async function DocumentsPage({
@@ -26,7 +27,7 @@ export default async function DocumentsPage({
     <main className={pageWide}>
       <PageHeader
         title="Documentos"
-        description="La wiki del workspace. Edición simultánea con Yjs."
+        description={`La wiki del workspace · ${documents.length} ${documents.length === 1 ? "documento" : "documentos"}. Edición simultánea con Yjs.`}
         action={<NewDocumentButton workspaceId={ctx.workspace.id} slug={slug} />}
       />
       {documents.length === 0 ? (
@@ -36,26 +37,29 @@ export default async function DocumentsPage({
           action={<NewDocumentButton workspaceId={ctx.workspace.id} slug={slug} />}
         />
       ) : (
-        <ul className="mt-8 overflow-hidden rounded-2xl border border-line bg-shell">
+        <ul className="mt-2 divide-y divide-line border-b border-line">
           {documents.map((doc) => (
-            <li key={doc.id} className="border-b border-line last:border-b-0">
+            <li key={doc.id}>
               <Link
                 href={`/${slug}/documents/${doc.id}`}
-                className="flex flex-col gap-1 px-4 py-4 hover:bg-raised/50 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4 sm:px-5"
+                className="group -mx-4 flex flex-col gap-1 px-4 py-5 transition-colors hover:bg-raised/50 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:py-6"
               >
-                <div className="min-w-0">
-                  <p className="truncate font-display text-lg tracking-tight text-paper">
+                <span className="min-w-0">
+                  <span className="block truncate font-display text-xl font-medium tracking-tight text-paper transition-colors group-hover:text-spark-hover sm:text-2xl">
                     {doc.title || "Sin título"}
-                  </p>
-                  <p className="mt-1 line-clamp-1 text-sm text-mist">
+                  </span>
+                  <span className="mt-1 block line-clamp-2 text-sm leading-relaxed text-mist">
                     {doc.plain_text || "Vacío"}
-                  </p>
-                </div>
-                <span className="shrink-0 text-xs text-mist">
-                  {formatDistanceToNow(new Date(doc.updated_at), {
-                    addSuffix: true,
-                    locale: es,
-                  })}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2 sm:pl-4">
+                  {doc.is_public ? <Badge>Público</Badge> : null}
+                  <span className="text-xs text-mist">
+                    {formatDistanceToNow(new Date(doc.updated_at), {
+                      addSuffix: true,
+                      locale: es,
+                    })}
+                  </span>
                 </span>
               </Link>
             </li>

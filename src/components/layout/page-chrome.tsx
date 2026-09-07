@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-export const pageWide = "mx-auto w-full max-w-5xl px-4 py-6 sm:px-8 sm:py-8";
-export const pageNarrow = "mx-auto w-full max-w-3xl px-4 py-6 sm:px-8 sm:py-8";
+export const pageWide = "mx-auto w-full max-w-4xl px-5 pb-14 pt-10 sm:px-8 sm:pt-14 lg:pb-20";
+export const pageNarrow = "mx-auto w-full max-w-3xl px-5 pb-14 pt-10 sm:px-8 sm:pt-14 lg:pb-20";
 
 export function PageHeader({
   title,
@@ -13,13 +13,21 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="font-display text-2xl tracking-tight text-paper sm:text-3xl">{title}</h1>
-        {description ? <p className="mt-1 max-w-xl text-sm leading-relaxed text-mist">{description}</p> : null}
+    <header className="border-b border-line pb-8 sm:pb-10">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+        <div className="min-w-0">
+          <h1 className="font-display text-4xl font-medium tracking-[-0.02em] text-balance text-paper sm:text-5xl">
+            {title}
+          </h1>
+          {description ? (
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-mist">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
-    </div>
+    </header>
   );
 }
 
@@ -30,7 +38,5 @@ export function Panel({
   children: ReactNode;
   className?: string;
 }) {
-  return (
-    <section className={`rounded-2xl border border-line bg-shell p-4 sm:p-6 ${className}`}>{children}</section>
-  );
+  return <section className={`border-t border-line pt-8 sm:pt-10 ${className}`}>{children}</section>;
 }

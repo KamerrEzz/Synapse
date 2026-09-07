@@ -54,6 +54,51 @@ body {
   font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* ── Browser surfaces ─────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(212, 160, 84, 0.28);
+  color: inherit;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(58, 50, 40, 0.8) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(58, 50, 40, 0.7);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line);
+}
+
+input,
+textarea {
+  caret-color: var(--spark);
+}
+
+a {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--spark) 70%, transparent);
+  outline-offset: 2px;
+}
+
 .font-display {
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
 }

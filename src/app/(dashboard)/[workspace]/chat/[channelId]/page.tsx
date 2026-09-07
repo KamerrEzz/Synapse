@@ -34,8 +34,9 @@ export default async function ChannelPage({
 
   const panel = (
     <>
-      <div className="border-b border-line px-4 py-4">
-        <p className="text-[11px] text-mist">Canales</p>
+      <div className="flex items-center gap-2 border-b border-line px-4 py-4">
+        <span className="h-2 w-2 rounded-full bg-spark" aria-hidden />
+        <h2 className="font-display text-lg tracking-tight">Canales</h2>
       </div>
       <ul className="flex-1 space-y-0.5 overflow-y-auto p-2">
         {channelList.map((c) => (
@@ -45,11 +46,11 @@ export default async function ChannelPage({
               className={cn(
                 "block rounded-lg px-3 py-2.5 text-sm md:py-2",
                 c.id === channelId
-                  ? "bg-raised text-paper shadow-[inset_2px_0_0_0_var(--spark)]"
+                  ? "bg-raised text-paper"
                   : "text-mist hover:bg-raised/70 hover:text-paper",
               )}
             >
-              <span className="text-spark">#</span>
+              <span className={c.id === channelId ? "text-spark" : "text-mist"}>#</span>
               {c.name}
             </Link>
           </li>
